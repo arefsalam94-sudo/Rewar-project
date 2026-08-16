@@ -1,0 +1,262 @@
+# SEED_DATA.md — One Example Per Collection
+
+Tracks the one real example document seeded into each Firestore collection,
+so it's always clear what "real" data currently exists to test screens
+against (per the "One example, seeded to Firestore, per page" rule in
+`CLAUDE.md`).
+
+Update the **Status** column as each one actually gets added to Firestore —
+don't mark it seeded until it's really there and confirmed rendering.
+
+| Collection | Example | Status |
+|---|---|---|
+| legal_documents | **all 7 policy documents** (en/ku/ar) — seed with `node tool/seed_legal_documents.js` | NOT SEEDED (needs a Firebase project) |
+| featured | 4 carousel slides (nature spot, car, flight, tour) — seed with `node tool/seed_home_screen.js` | NOT SEEDED (needs a Firebase project) |
+| nature_spots | Rawanduz Canyon (highlighted), Sami Abdulrahman Park, Erbil Citadel — seed with `node tool/seed_explore_nature.js` | NOT SEEDED (needs a Firebase project) |
+| nature_spots/{id}/reviews | 7 visitor reviews — 3 for Rawanduz (Elena P., Hassan S., Priya N.), 2 each for the other places. Same script | NOT SEEDED (needs a Firebase project **and** deployed functions) |
+| nature_spots/{id}/reviews/{id}/votes | n/a — written only by a signed-in user tapping the heart | N/A (not seeded by hand) |
+| hotels | Divan Hotel (Iraq, Erbil, 40m Street) | NOT SEEDED |
+| hotels/{id}/rooms | Ocean View Suite | NOT SEEDED |
+| hotels/{id}/reviews | Sarah — "The views are incredible! Highly recommend." | NOT SEEDED |
+| cars | Tesla Model 3 (GreenWheels Rentals) | NOT SEEDED |
+| tours | Moraine Lake (Alberta, Canada, 3 days travel) | NOT SEEDED |
+| flights | Astra Airlines, Erbil (EBL) → Istanbul | NOT SEEDED |
+| users | (your own test account, created via the Auth screen) | NOT SEEDED |
+| bookings | one per type — hotel, flight, car, tour (upcoming + completed) — seed with `node tool/seed_bookings.js <uid>` | NOT SEEDED (needs a Firebase project) |
+| favorites | (one test favorite once favoriting is wired up) | NOT SEEDED |
+| password_reset_codes | n/a — written only by Cloud Functions | N/A (not seeded by hand) |
+| mail | n/a — written only by Cloud Functions | N/A (not seeded by hand) |
+
+> The Verification Code screen reads no catalog data, so the "one seeded
+> example document" rule doesn't apply to it in the usual way. Its equivalent
+> proof is an **end-to-end run**: request a code, receive the real SMS/email,
+> and verify it against the deployed Cloud Function. That can't happen until
+> `FIREBASE_SETUP.md` is finished.
+
+### featured + nature_spots (Home screen)
+
+Seeded together by one script, because the carousel is meaningless without at
+least one catalog document behind it:
+
+```
+GOOGLE_APPLICATION_CREDENTIALS=/path/to/key.json \
+  node tool/seed_home_screen.js
+```
+
+The same four slides are duplicated as `bundledFeatured()` in
+`lib/services/featured_service.dart`, which is what preview mode serves before
+Firebase exists — **keep the two in sync**, the same rule as the bundled
+Terms text.
+
+> ⚠️ Every seeded slide has an **empty `imageUrl`**. Upload the four photos to
+> Firebase Storage and paste the download URLs in (or set them from the admin
+> panel) — with no URL the card falls back to a flat brand colour instead of
+> a photo. The page is not "done" until at least one slide renders with its
+> real image on a running device.
+
+### nature_spots (Explore Nature screen)
+
+The three places drawn in the `explore nature.jpg` reference — Rawanduz Canyon
+(flagged `highlighted`, so it fills the top carousel), Sami Abdulrahman Park
+and Erbil Citadel:
+
+```
+GOOGLE_APPLICATION_CREDENTIALS=/path/to/key.json \
+  node tool/seed_explore_nature.js
+```
+
+The same three are duplicated as `NatureSpotsService.bundledSpots()` in
+`lib/services/nature_spots_service.dart`, which is what preview mode serves
+before Firebase exists — **keep the two in sync**, the same rule as the
+bundled Terms text and the bundled featured slides.
+
+Each document carries all **three** tag arrays the Explore Nature and Customize
+Filters screens filter on — `categories`, `placeTypes`, `amenities`. A place
+with an empty array simply never matches that group's chips, so leaving one out
+silently hides the place from anyone who filters. The seeded three are tagged
+across every group deliberately, so each filter has something to find.
+
+Rawanduz also carries three `nearbyStays` preview maps.
+
+**Reviews are seeded by the same script**, seven of them: three for Rawanduz —
+Elena P., Hassan S. and Priya N., the ones drawn in the Reviews & Ratings
+reference — and two each for Sami Abdulrahman Park and Erbil Citadel, so no
+place shows a score with nothing behind it.
+
+Two things about them are easy to get wrong:
+
+- **The document id is the author's uid**, which `firestore.rules` requires
+  (one review per person per place). The `seed-*` ids stand in for real Auth
+  uids; replace them, or delete these documents, once real accounts exist.
+- **`rating` is a half-step number**, 0.5–5, not an integer. The page shows it
+  as `rating × 2` out of 10 — 4.5 reads as 9.0 / 10.
+
+> ⚠️ **The script writes no `reviewScore`, `ratingCount` or `ratingBreakdown`,
+> deliberately.** All three are server-owned and derived by the
+> `syncNatureReviewAggregates` Cloud Function from the reviews above. Deploy
+> the functions (`firebase deploy --only functions`) before or with the seed;
+> until that trigger runs, **every place will show no score at all** — which is
+> the honest state for a catalog whose reviews have not been counted, and is
+> the failure to expect rather than a bug in the screen.
+
+The same seven are mirrored by `NatureSpotsService.bundledReviews()`, and the
+aggregates they imply are mirrored on `bundledSpots()` (Rawanduz 8.0 from 3,
+Sami 8.5 from 2, Erbil 9.0 from 2). **Keep all of it in sync** — the bundled
+numbers exist to match what the Cloud Function would compute, so a preview that
+disagrees with them is a bug in the fixture, not a display quirk.
+
+> This script **overwrites** `nature_spots/rawanduz-canyon`, which
+> `tool/seed_home_screen.js` also writes. Intentional: this one carries the
+> revised schema (locale maps, `reviewScore`, `categories`, `highlighted`,
+> `active`), and the Home screen only runs an unfiltered `count()` against the
+> collection, so it is unaffected. Run this one **second**.
+
+> ⚠️ Every seeded document has an **empty `imageUrls`** array. Upload the
+> photos to Firebase Storage and paste the download URLs in (or set them from
+> the admin panel) — with no URL the card falls back to a brand-coloured panel
+> with a park icon instead of a photo. The page is not "done" until at least
+> one place renders with its real image on a running device.
+
+### legal_documents — all seven, one script
+
+One command seeds every document behind the Policy hub — Terms & Conditions,
+Privacy Policy, Cancellation & Refunds, Payment Policy, Liability &
+Disclaimer, Contact & Complaints, Account & Data Deletion:
+
+```sh
+GOOGLE_APPLICATION_CREDENTIALS=/path/to/key.json \
+  node tool/seed_legal_documents.js
+```
+
+**There is no second copy of the wording to keep in sync.** Both the script
+and the app read `assets/legal/legal_documents.json`: the app bundles it and
+serves it in preview mode, the script reads it off disk and writes it to
+Firestore. To change a policy, edit that JSON — never a Dart or JS copy, and
+never the Firestore console alone (the next seed would overwrite it).
+
+Two guards, so a bad edit fails loudly instead of shipping half-translated:
+
+- A **Dart test** asserts every document has all three languages with the same
+  sections, the same block count, the same block types, and the same bullets
+  bolded — plus that the asset covers exactly the seven `PolicyTopic` ids,
+  with no missing id and no orphan.
+- The **seed script validates before it writes anything**, so a malformed file
+  cannot leave the collection half-updated.
+
+Preview mode parses the asset with the same `LegalDocument.fromMap()` used on
+live Firestore data, so a malformed document shows up in development.
+
+> `legalReviewed` is **false** on all seven, and the app shows a visible
+> warning banner while it is. Flip it to true only once the wording —
+> especially the Kurdish and Arabic renderings, which were translated rather
+> than drafted by a legal translator — has been signed off by someone
+> qualified. The script prints a reminder.
+>
+> ⚠️ Several documents still contain **[square-bracket placeholders]** —
+> support email, phone number, business name and address, response times,
+> accepted payment methods. `contact_complaints` says so in its own text. The
+> script prints how many documents still have them.
+>
+> ⚠️ **`terms_of_service` is at version 2.** The registration consent gate and
+> the Policy hub's "Terms & Conditions" row read this same document, on
+> purpose. Its wording was replaced wholesale, so anyone who accepted v1 has
+> not accepted this text.
+
+> ⚠️ Unlike the catalog collections, this one has **no missing images** and
+> needs no follow-up upload. Seeding it is the whole job.
+
+### bookings (My Bookings screen)
+
+`node tool/seed_bookings.js <firebase-auth-uid>` writes five documents —
+`preview-hotel`, `preview-flight`, `preview-car`, `preview-tour-upcoming`,
+`preview-tour` — covering every product type, so every card layout on the
+screen is reachable. Four are ahead of today and one is completed, so the
+Upcoming and Past segments both have content whenever the script is run.
+
+Tours are seeded **twice**, once upcoming and once completed. The screen opens
+on Upcoming, so a tour that only exists in the past leaves the Tours chip empty
+on the segment users land on — which reads as a broken filter rather than as an
+empty Past.
+
+**The uid argument is required and must be a real Firebase Auth uid.** Every
+read is pinned to `request.auth.uid` by `firestore.rules`, so a booking written
+against a placeholder uid is invisible in the app and looks like a bug in the
+screen rather than a bad seed. The script refuses to run without one.
+
+**This script exists only because checkout does not.** In production a booking
+is created exclusively by the checkout Cloud Function after the payment provider
+confirms the charge — the rules deny every client write to this collection, and
+`bookingReference` must be generated server-side. The script uses the Admin SDK,
+which bypasses the rules; that is the only reason it can write. Delete it, or
+restrict it to non-production projects, once Phases 4–7 exist.
+
+The same five documents are duplicated as `BookingsService.bundledBookings()`
+in `lib/services/bookings_service.dart`, which preview mode serves before
+Firebase exists. **Keep the two in sync** — a test asserts the ids and booking
+references match.
+
+> `display.imageUrl` is empty on every document. Upload the photos to Storage
+> and set the URLs before calling this page done; until then the card falls
+> back to a brand-coloured panel with an image icon rather than a broken image.
+
+## Suggested field values, ready to paste into the admin manual-entry
+## forms (or Firestore console) once each collection exists
+
+### hotels
+```
+name: Divan Hotel
+address: Iraq, Erbil, 40m Street
+city: Erbil
+starRating: 5
+reviewScore: 8.9
+pricePerNightFrom: 200
+amenities: [Pool, Bar, Restaurant, Parking]
+```
+
+### hotels/{id}/rooms
+```
+name: Ocean View Suite
+bedConfiguration: [{type: Queen, count: 1}, {type: Sofa Bed, count: 1}]
+sizeSqm: 90
+facilities: [Beach Access, Balcony, Free Wi-Fi, Minibar, Room Service]
+pricingOptions: [
+  {title: "Property + Breakfast", infoLines: ["Non-refundable","Prepay online","Check-in: 3:00 PM"], pricePerNight: 260},
+  {title: "Properties Only", infoLines: ["Free cancellation","Prepay online","Check-in: 2:00 PM"], pricePerNight: 240}
+]
+availableCount: 4
+```
+
+### cars
+```
+name: Tesla Model 3
+year: 2026
+rentalCompany: GreenWheels Rentals
+companyTag: DriveXpress
+capacity: 4
+fuelType: Electric
+bags: 2
+hasAC: true
+paymentInfo: Pay at the pick-up
+pricePerDay: 58
+```
+
+### tours
+```
+name: Moraine Lake
+duration: 3 days travel
+description: A glacier-fed alpine lake surrounded by towering peaks, with
+  guided hikes along the shoreline and prime photography stops.
+companyTag: AB Travels
+features: [Camping, Transport, Hiking, Guide]
+pricePerPerson: 50
+```
+
+### flights
+```
+airline: Astra Airlines
+fromAirportCode: EBL
+toAirportCode: IST
+durationMinutes: 165
+price: 400
+cabinClass: Economy
+```

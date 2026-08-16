@@ -1,0 +1,415 @@
+rules_version = '2';
+
+// Firestore Security Rules — Kurdistan Paradise Travel Guide (mobile app).
+//
+// Per SECURITY.md section 1: DENY BY DEFAULT. Nothing is readable or
+// writable unless a rule below explicitly allows it. Collections are added
+// here as the screen that uses them is built — not as end-of-project cleanup.
+//
+// Collections covered so far:
+//   password_reset_codes  — Verification Code screen (server-only)
+//   mail                  — Verification Code screen (server-only)
+//   featured              — Home screen carousel (public read)
+//   nature_spots          — Home screen count() (public read)
+//   favorites             — Home screen heart (owner-only)
+//   bookings              — My Bookings screen (owner-only READ; no client write)
+//   nature_spots/*/reviews       — Reviews & Ratings screen (public read of
+//                                  published; one owner-written doc per user)
+//   nature_spots/*/reviews/*/votes — helpful votes (owner-only, one per user)
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Admin status comes from a custom claim on the Auth token, never from a
+    // client-writable field (SECURITY.md section 3).
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    // -------------------------------------------------------------------
+    // users/{uid} — the signed-in user's own profile, created by the
+    // Register screen.
+    //
+    // The security question here is not "can they write?" but "WHICH fields
+    // can they write?". A user creating their own document must never be
+    // able to set `role: "admin"`, nor to claim `emailVerified: true` /
+    // `phoneVerified: true` — those mirror Firebase Auth, which is the real
+    // source of truth, and are written only by Cloud Functions (Admin SDK,
+    // which bypasses these rules).
+    //
+    // So both create and update are restricted to an explicit allow-list of
+    // fields. Anything outside it is rejected regardless of its value.
+    // -------------------------------------------------------------------
+    match /users/{userId} {
+      // Fields the client may ever set on itself.
+      function writableFields() {
+        return [
+          'name', 'email', 'phone', 'dateOfBirth', 'gender',
+          'profileImageUrl', 'preferredLanguage', 'preferredCurrency',
+          'termsAcceptedAt', 'termsVersion',
+          'createdAt', 'updatedAt', 'source'
+        ];
+      }
+
+      function onlyWritableFields() {
+        return request.resource.data.keys().hasOnly(writableFields());
+      }
+
+      // Updates compare only changed keys so server-owned fields such as
+      // `hasPaymentMethod` can remain on the document without becoming
+      // client-writable.
+      function onlyWritableFieldsChanged() {
+        return request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(writableFields());
+      }
+
+      function isOwner() {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
+      // Optional on every write (create or a partial merge-update like the
+      // Home screen drawer's Currency row), but if present must be one of
+      // the two supported codes.
+      function validCurrency() {
+        return !('preferredCurrency' in request.resource.data.keys())
+          || request.resource.data.preferredCurrency in ['USD', 'IQD', 'EUR'];
+      }
+
+      function validLanguage() {
+        return !('preferredLanguage' in request.resource.data.keys())
+          || request.resource.data.preferredLanguage in ['en', 'ku', 'ar'];
+      }
+
+      function validShape() {
+        return request.resource.data.name is string
+          && request.resource.data.name.size() >= 2
+          && request.resource.data.name.size() <= 100
+          && request.resource.data.email is string
+          && request.resource.data.phone is string
+          && request.resource.data.dateOfBirth is timestamp
+          // Gender is optional, but if present must be one of three values.
+          && (!('gender' in request.resource.data.keys())
+              || request.resource.data.gender in ['male', 'female', 'other'])
+          && validCurrency()
+          && validLanguage();
+      }
+
+      allow get: if isOwner();
+      // No `list`: nobody may enumerate the user base.
+      allow create: if isOwner() && onlyWritableFields() && validShape();
+      // Updates may not change the document's owner-critical identity, and
+      // still may not introduce privileged fields. A merge-update (e.g. just
+      // `profileImageUrl` or `preferredCurrency`) does not carry every field
+      // `validShape()` checks, so only the fields actually present are
+      // re-validated here.
+      allow update: if isOwner()
+        && onlyWritableFieldsChanged()
+        && request.resource.data.email == resource.data.email
+        && validCurrency()
+        && validLanguage();
+      // Account deletion goes through a Cloud Function so Auth, Storage and
+      // Firestore are cleaned up together (SECURITY.md 9).
+      allow delete: if false;
+    }
+
+    // The `usernames` collection was removed with the username feature. It is
+    // deliberately NOT re-added as an open path: any collection without a rule
+    // is denied by default (SECURITY.md 1), which is exactly what we want for
+    // a namespace that no longer exists.
+
+    // -------------------------------------------------------------------
+    // legal_documents — versioned Terms of Service / Privacy Policy text.
+    //
+    // PUBLIC read, including unauthenticated: a user has to be able to read
+    // the Terms before they have an account, and consent is collected during
+    // registration. There is nothing sensitive here — it is the text every
+    // user is meant to see.
+    //
+    // Admin-only write via the custom claim (SECURITY.md 3), never from the
+    // mobile client. If the client could write this, it could rewrite the
+    // agreement it is about to accept.
+    // -------------------------------------------------------------------
+    match /legal_documents/{docId} {
+      allow get: if true;
+      // No `list`: documents are fetched by known id, not enumerated.
+      allow list: if false;
+      allow create, update, delete: if request.auth != null
+        && request.auth.token.admin == true;
+    }
+
+    // -------------------------------------------------------------------
+    // password_reset_codes — hashed one-time password-reset codes.
+    //
+    // NO client access whatsoever, in either direction. Only the Cloud
+    // Functions (Firebase Admin SDK) touch this collection, and the Admin
+    // SDK bypasses these rules entirely.
+    //
+    // Read access would leak the code hash + salt to anyone who could guess
+    // a document id, so this stays fully closed rather than "authenticated
+    // users only" — the client never has a legitimate reason to read it.
+    // -------------------------------------------------------------------
+    match /password_reset_codes/{docId} {
+      allow read, write: if false;
+    }
+
+    // -------------------------------------------------------------------
+    // email_verify_codes / email_change_codes — hashed one-time codes for
+    // proving ownership of an email address, at registration and when
+    // changing it.
+    //
+    // Closed for exactly the same reason as password_reset_codes above: the
+    // documents hold a code hash and its salt, and the client never has a
+    // legitimate reason to read or write them. The Cloud Functions use the
+    // Admin SDK, which bypasses these rules.
+    //
+    // Note the document id is the uid, so "deny read" is what stops a signed-in
+    // user from simply fetching their own pending code instead of receiving it
+    // by email — which would defeat the whole verification.
+    // -------------------------------------------------------------------
+    match /email_verify_codes/{docId} {
+      allow read, write: if false;
+    }
+
+    match /email_change_codes/{docId} {
+      allow read, write: if false;
+    }
+
+    // -------------------------------------------------------------------
+    // mail — outbound email queue consumed by the "Trigger Email from
+    // Firestore" extension. Written only by Cloud Functions.
+    //
+    // Client write access here would let anyone send arbitrary email from
+    // the project's verified sender address.
+    // -------------------------------------------------------------------
+    match /mail/{docId} {
+      allow read, write: if false;
+    }
+
+    // -------------------------------------------------------------------
+    // featured — the home screen's carousel, curated in the admin panel.
+    //
+    // PUBLIC read, including unauthenticated: the home screen is fully
+    // browsable by a guest who has not signed in, so the carousel cannot
+    // require auth. `list` IS granted here (unlike legal_documents), because
+    // the screen queries the collection rather than fetching a known id.
+    //
+    // Admin-only write — this is catalog/marketing content, and a client
+    // that could write it could put anything on the app's front page.
+    // -------------------------------------------------------------------
+    match /featured/{itemId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // -------------------------------------------------------------------
+    // nature_spots — catalog data. Public read, admin-only write, per
+    // SECURITY.md section 1.
+    //
+    // Read by two screens: the home screen's count() aggregation, and the
+    // Explore Nature list screen, which queries the documents themselves
+    // (highlighted carousel + filtered list). `list` is required for both —
+    // count() is not permitted without it either.
+    //
+    // Public read is correct and deliberate: this is the catalog the whole
+    // app exists to show, browsable by a guest who has never signed in.
+    // There is nothing user-specific in it. Write stays admin-only — a
+    // client that could write here could change prices, ratings and place
+    // descriptions for every user.
+    // -------------------------------------------------------------------
+    match /nature_spots/{spotId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+
+      // Public visitor feedback, written by the Reviews & Ratings screen.
+      //
+      // **The document id IS the author's uid.** That is what makes "one
+      // review per person per place" a rule rather than a hope: without it a
+      // client could post the same review a hundred times and drag the
+      // average wherever it liked, and no rule could tell the difference
+      // between that and a hundred honest visitors.
+      //
+      // `rating` is a **number in 0.5 steps from 0.5 to 5**, not an integer —
+      // the design draws half stars (6.0/10 = 3.5 stars). The 0.5-step check
+      // is `rating * 2 == round(rating * 2)`, so 3.7 is rejected even though
+      // it is inside the range; an arbitrary decimal would be a value no UI
+      // in this app can produce.
+      //
+      // `helpfulCount` is **server-owned** and deliberately absent from both
+      // allow-lists. It is maintained by the `syncReviewHelpfulCount`
+      // Firestore trigger from the `votes` subcollection below. A client that
+      // could write it could simply declare its own review the most helpful
+      // one on the page.
+      match /reviews/{reviewId} {
+        // Fields the author may ever set on their own review.
+        function authorFields() {
+          return [
+            'userId', 'userName', 'avatarUrl', 'rating', 'comment',
+            'status', 'createdAt', 'updatedAt'
+          ];
+        }
+
+        function validRating(rating) {
+          return rating is number
+            && rating >= 0.5
+            && rating <= 5
+            && rating * 2 == math.round(rating * 2);
+        }
+
+        function validReviewBody() {
+          return request.auth != null
+            // The id is the uid, so a user gets exactly one review here.
+            && reviewId == request.auth.uid
+            && request.resource.data.userId == request.auth.uid
+            && request.resource.data.userName is string
+            && request.resource.data.userName.size() > 0
+            && request.resource.data.userName.size() <= 80
+            && validRating(request.resource.data.rating)
+            && request.resource.data.comment is string
+            && request.resource.data.comment.size() >= 3
+            && request.resource.data.comment.size() <= 1000
+            && request.resource.data.status == 'published'
+            && request.resource.data.updatedAt == request.time;
+        }
+
+        allow get, list: if resource.data.status == 'published';
+
+        allow create: if validReviewBody()
+          && request.resource.data.keys().hasOnly(authorFields())
+          && request.resource.data.createdAt == request.time;
+
+        // Compares only the CHANGED keys, so the server-owned `helpfulCount`
+        // can sit on the document without the author having to send it back
+        // — and without it becoming writable.
+        allow update: if request.auth != null
+          && resource.data.userId == request.auth.uid
+          && validReviewBody()
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(authorFields())
+          && request.resource.data.userId == resource.data.userId
+          && request.resource.data.createdAt == resource.data.createdAt;
+
+        allow delete: if isAdmin() || (request.auth != null
+          && resource.data.userId == request.auth.uid);
+
+        // -----------------------------------------------------------------
+        // votes/{voterId} — "I found this review helpful", one per person.
+        //
+        // The vote is a DOCUMENT rather than a counter the client increments,
+        // for the same reason the review id is the uid: a document keyed by
+        // the voter's uid physically cannot be cast twice, whereas an
+        // increment can be sent in a loop. The visible number comes from
+        // `helpfulCount` on the parent review, which only the trigger writes.
+        //
+        // `list` is denied: nobody needs to enumerate who liked a review, and
+        // allowing it would turn "helpful" into a public record of who read
+        // what. The screen reads only the viewer's own vote, by known id.
+        // -----------------------------------------------------------------
+        match /votes/{voterId} {
+          function isVoter() {
+            return request.auth != null && voterId == request.auth.uid;
+          }
+
+          allow get: if isVoter();
+          allow list: if false;
+          allow create: if isVoter()
+            && request.resource.data.keys().hasOnly(['userId', 'createdAt'])
+            && request.resource.data.userId == request.auth.uid
+            && request.resource.data.createdAt == request.time;
+          // A vote is cast or withdrawn; there is nothing to edit. Allowing
+          // update would only add a way to repoint an existing vote.
+          allow update: if false;
+          allow delete: if isVoter();
+        }
+      }
+    }
+
+    // -------------------------------------------------------------------
+    // favorites — a user's saved places. Strictly owner-only in both
+    // directions (SECURITY.md section 1: "users can only read/write their
+    // own data").
+    //
+    // `list` is allowed only because the rule pins resource.data.userId to
+    // the caller: Firestore rejects any query that isn't provably limited to
+    // that user's own documents, so nobody can enumerate someone else's
+    // favourites.
+    //
+    // Document ids are `{uid}_{itemType}_{itemId}`, but the id is NOT what
+    // is trusted — the rules check the userId field, so a forged id gains
+    // nothing.
+    // -------------------------------------------------------------------
+    match /favorites/{favoriteId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function ownsIncoming() {
+        return isSignedIn()
+          && request.resource.data.userId == request.auth.uid;
+      }
+
+      function ownsExisting() {
+        return isSignedIn() && resource.data.userId == request.auth.uid;
+      }
+
+      function validShape() {
+        return request.resource.data.keys().hasOnly([
+            'userId', 'itemType', 'itemId',
+            'createdAt', 'updatedAt', 'source'
+          ])
+          && request.resource.data.itemType in
+              ['nature_spot', 'hotel', 'car', 'tour', 'flight']
+          && request.resource.data.itemId is string
+          && request.resource.data.itemId.size() > 0
+          && request.resource.data.itemId.size() <= 200;
+      }
+
+      allow get, list: if ownsExisting();
+      allow create: if ownsIncoming() && validShape();
+      // A favourite is added or removed, never edited in place — allowing
+      // update would only add a way to repoint a row at another user.
+      allow update: if false;
+      allow delete: if ownsExisting();
+    }
+
+    // -------------------------------------------------------------------
+    // bookings — a user's own hotel/car/flight/tour reservations.
+    //
+    // READ-ONLY FROM THE CLIENT, and owner-only at that.
+    //
+    // Creation belongs to the checkout Cloud Function, which runs only after
+    // the payment provider confirms the charge (SECURITY.md section 5). If a
+    // client could create here, a modified app could mint itself a confirmed
+    // booking it never paid for — the single most valuable thing to forge in
+    // this app. Cancellation is likewise a Cloud Function: it has to call the
+    // provider's cancel API and compute the refund, neither of which a client
+    // can be trusted to do. The Admin SDK bypasses these rules, so denying
+    // every client write costs the server nothing.
+    //
+    // `list` is allowed only because the rule pins resource.data.userId to
+    // the caller: Firestore rejects any query not provably limited to the
+    // caller's own documents, so `where('userId', == someoneElse)` fails
+    // rather than returning another user's trips. Same mechanism as
+    // favorites.
+    //
+    // There is no guest booking — request.auth must exist — so a signed-out
+    // user is shown a sign-in prompt rather than an empty list.
+    // -------------------------------------------------------------------
+    match /bookings/{bookingId} {
+      function ownsExisting() {
+        return request.auth != null
+          && resource.data.userId == request.auth.uid;
+      }
+
+      allow get, list: if ownsExisting();
+      // Every write path is server-side. See the note above.
+      allow create, update, delete: if false;
+    }
+
+    // -------------------------------------------------------------------
+    // Catch-all deny. Every future collection must add an explicit rule
+    // above this line; nothing is granted access by omission.
+    // -------------------------------------------------------------------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

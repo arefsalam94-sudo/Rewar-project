@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd \"c:/Users/pc/StudioProjects/kurdistan_paradise_travel_guide\" && echo \"--- assets/images ---\" && ls -la assets/images/ && echo \"--- fonts on system: Jakarta? ---\" && ls /c/Windows/Fonts/ | grep -i jakarta || echo \"Plus Jakarta Sans NOT on system\")",
+      "Read(//c/Windows/Fonts//**)",
+      "Bash(flutter analyze *)",
+      "Bash(flutter test *)",
+      "Bash(flutter pub *)",
+      "Read(//c/Users/pc/**)",
+      "Bash(grep -iE \"\\\\.\\(ttf|otf\\)$\")",
+      "Bash(cd \"c:/Users/pc/StudioProjects/kurdistan_paradise_travel_guide\" && cp /c/Windows/Fonts/DUBAI-REGULAR.TTF assets/fonts/Dubai-Regular.ttf && ls assets/fonts/ && echo \"--- Corbel usages in lib ---\" && grep -rn \"fontFamily: 'Corbel'\" lib/ | sed 's|c:/Users/pc/StudioProjects/kurdistan_paradise_travel_guide/||')",
+      "Bash(python -c ' *)",
+      "Bash(sed -i \"s/for \\(final scale in const \\\\[1.0, 1.3\\\\]\\)/for \\(final scale in const [2.0]\\)/\" test/tmp_audit_test.dart)",
+      "Bash(sed -i \"s/^  \\(320, 480, 'tiny-320x480'\\),/  \\(411, 731, 'pixel-411x731'\\),/\" test/tmp_audit_test.dart)",
+      "Bash(sed -i \"/\\(320, 568, 'SE-320x568'\\),/d;/\\(360, 640, 'android-360x640'\\),/d;/\\(393, 852, 'iPhone15-393x852'\\),/d;/\\(411, 731, 'pixel-411x731'\\),$/{x;/./d;x;h}\" test/tmp_audit_test.dart)",
+      "Bash(cd \"d:/mobile project application/kurdistan_paradise_travel_guide\" && sed -i 's/_located/located/g' test/screens/nature_place_detail_screen_test.dart && grep -n \"located\\\\|locationService\" test/screens/nature_place_detail_screen_test.dart)"
+    ],
+    "additionalDirectories": [
+      "C:\\Windows\\Fonts",
+      "d:\\mobile project application\\kurdistan_paradise_travel_guide\\test\\screens"
+    ]
+  }
+}

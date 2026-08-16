@@ -1,0 +1,44 @@
+rules_version = '2';
+
+// Firebase Storage Security Rules — Kurdistan Paradise Travel Guide.
+//
+// Per SECURITY.md section 2: deny by default, users write only to their own
+// path, and size/content-type limits are enforced HERE rather than only in
+// the client — a modified client could otherwise upload anything, at any
+// size, and run up your storage bill.
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // -------------------------------------------------------------------
+    // profile_images/{uid}/ — the user's own avatar, written by the
+    // Account Setup screen.
+    //
+    // Public read: avatars appear next to reviews and bookings, so they
+    // need to be readable without knowing who is asking. Nothing sensitive
+    // lives here.
+    // -------------------------------------------------------------------
+    match /profile_images/{userId}/{fileName} {
+      allow read: if true;
+
+      allow write: if request.auth != null
+        && request.auth.uid == userId
+        // Images only. Without this, any file type could be uploaded and
+        // served from your domain.
+        && request.resource.contentType.matches('image/.*')
+        // 5 MB ceiling, matching ProfileSetupService.maxImageBytes.
+        && request.resource.size <= 5 * 1024 * 1024;
+
+      // Users may replace or clear their own picture.
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // -------------------------------------------------------------------
+    // Catch-all deny. Catalog image paths (hotel_images/, car_images/,
+    // tour_images/) get their own admin-only rules when those screens are
+    // built — nothing is granted access by omission.
+    // -------------------------------------------------------------------
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

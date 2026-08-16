@@ -1,0 +1,81 @@
+{
+  "indexes": [
+    {
+      "//": "Nature detail + Reviews & Ratings: published reviews, newest first. This is the default sort on the reviews page and the two-review preview on the detail page.",
+      "collectionGroup": "reviews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "//": "Reviews & Ratings, 'Highest rated' sort. Ordered in the QUERY rather than in Dart on purpose: the list is paginated, so sorting a downloaded page would rank the newest 10 reviews and call them the highest rated of 128.",
+      "collectionGroup": "reviews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "rating", "order": "DESCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "//": "Reviews & Ratings, 'Lowest rated' sort. Same reasoning as above.",
+      "collectionGroup": "reviews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "rating", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "//": "Reviews & Ratings, 'Most helpful' sort — the heart count the reference draws on every row. helpfulCount is server-owned (written only by the votes trigger), so this ordering cannot be gamed from a client.",
+      "collectionGroup": "reviews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "helpfulCount", "order": "DESCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "//": "Home screen carousel: featured.where('active', ==, true).orderBy('order'). An equality filter combined with an orderBy on a different field needs a composite index; Firestore's single-field indexes are not enough.",
+      "collectionGroup": "featured",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "active", "order": "ASCENDING" },
+        { "fieldPath": "order", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "//": "Explore Nature carousel: nature_spots.where('active', ==, true).where('highlighted', ==, true).orderBy('highlightOrder').",
+      "collectionGroup": "nature_spots",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "active", "order": "ASCENDING" },
+        { "fieldPath": "highlighted", "order": "ASCENDING" },
+        { "fieldPath": "highlightOrder", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "//": "Explore Nature list: nature_spots.where('active', ==, true).orderBy('reviewScore', desc). This is the ONLY list query — every filter (quick chips, place types, facilities) is applied in Dart, because Firestore permits one array clause per query and the screen has three multi-select groups. No array-contains index is needed as a result.",
+      "collectionGroup": "nature_spots",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "active", "order": "ASCENDING" },
+        { "fieldPath": "reviewScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "//": "My Bookings: bookings.where('userId', ==, uid).orderBy('startAt', desc). This is the ONLY bookings query — the type chips and the Upcoming/Past/Cancelled segment are both applied in Dart, because a composite index per combination would be five more indexes for a list that is small per user. See DATA_MODEL.md.",
+      "collectionGroup": "bookings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "startAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

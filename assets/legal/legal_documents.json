@@ -1,0 +1,1345 @@
+{
+  "_comment": [
+    "SINGLE SOURCE OF TRUTH for every document in the `legal_documents`",
+    "Firestore collection.",
+    "",
+    "Read by two consumers, so the wording can never drift between them:",
+    "  1. lib/services/legal_document_service.dart - loads this as a Flutter",
+    "     asset and serves it in preview mode, before Firebase exists.",
+    "  2. tool/seed_legal_documents.js - reads this file off disk and writes",
+    "     each entry to Firestore.",
+    "",
+    "Because preview mode parses this with the same LegalDocument.fromMap()",
+    "used on real Firestore data, a malformed document fails in development",
+    "rather than in production.",
+    "",
+    "Section shapes, both accepted - see DATA_MODEL.md:",
+    "  {heading, body}                       legacy, one paragraph",
+    "  {heading?, blocks: [{type, lead?, text}]}  headings optional, bullets",
+    "",
+    "NOT LEGALLY REVIEWED. Every document has legalReviewed:false and the app",
+    "shows a warning banner because of it. The Kurdish and Arabic renderings",
+    "were produced by translation, not by a qualified legal translator - the",
+    "language a user actually reads is the one that governs. Text in [square",
+    "brackets] is a placeholder that must be replaced before release.",
+    "",
+    "updatedAt is an ISO-8601 string here; the seed script replaces it with a",
+    "Firestore server timestamp on write."
+  ],
+
+  "terms_of_service": {
+    "version": 2,
+    "legalReviewed": false,
+    "updatedAt": "2026-08-10T14:30:00Z",
+    "content": {
+      "en": {
+        "sections": [
+          {
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "By downloading or using KurdistanGO, you agree to these Terms & Conditions. Please read them carefully. If you do not agree, please do not use the app."
+              }
+            ]
+          },
+          {
+            "heading": "Our role as an intermediary",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "KurdistanGO is a booking platform. We do not own or operate the flights, vehicles, hotels, or tours offered in the app. When you make a booking, you enter into a direct contract with the provider of that service. We act only to facilitate that booking. The provider’s own rules and restrictions — shown to you before you confirm — apply in addition to these Terms."
+              }
+            ]
+          },
+          {
+            "heading": "Your responsibilities",
+            "blocks": [
+              {
+                "type": "bullet",
+                "text": "Provide accurate, complete information, including correct passenger names and valid ID for flights."
+              },
+              {
+                "type": "bullet",
+                "text": "Ensure you are legally able to make the booking and are at least 18 years old, or acting with a guardian."
+              },
+              {
+                "type": "bullet",
+                "text": "Check visa, entry, and travel requirements for the Kurdistan Region and Iraq before you travel."
+              },
+              {
+                "type": "bullet",
+                "text": "Read and accept each provider’s rules and restrictions before confirming a booking."
+              },
+              {
+                "type": "bullet",
+                "text": "Keep your account login secure and not misuse the app."
+              }
+            ]
+          },
+          {
+            "heading": "Prices & service fees",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "Prices are shown before you confirm a booking. We may charge a service fee for using the platform, which will be displayed clearly during checkout. Provider prices may change due to availability, season, or currency movements until a booking is confirmed."
+              }
+            ]
+          },
+          {
+            "heading": "Nature information content",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "The “Explore Nature” section is provided for general information only. Trail conditions, weather, access, and safety in mountain and outdoor areas can change. This content is not a guarantee of safety or accessibility. You are responsible for your own decisions when visiting any location."
+              }
+            ]
+          },
+          {
+            "heading": "Changes to the app or Terms",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "We may update the app and these Terms from time to time. The current version, with its “Last updated” date, always applies. Continued use of the app means you accept the updated Terms."
+              }
+            ]
+          }
+        ]
+      },
+      "ku": {
+        "sections": [
+          {
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "بە داگرتن یان بەکارهێنانی KurdistanGO، ڕازی دەبیت بەم مەرج و ڕێساییانە. تکایە بە وردی بیانخوێنەوە. ئەگەر ڕازی نیت، تکایە ئەپەکە بەکارمەهێنە."
+              }
+            ]
+          },
+          {
+            "heading": "ڕۆڵی ئێمە وەک ناوەندگیر",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "KurdistanGO پلاتفۆرمێکی حجزکردنە. ئێمە خاوەن یان بەڕێوەبەری ئەو فڕۆکە، ئۆتۆمبێل، هۆتێل و گەشتانە نین کە لە ئەپەکەدا پێشکەش دەکرێن. کاتێک حجزێک دەکەیت، ڕاستەوخۆ گرێبەستێک لەگەڵ دابینکەری ئەو خزمەتگوزارییە دەبەستیت. ئێمە تەنها ئاسانکاری بۆ ئەو حجزە دەکەین. ڕێسا و سنوورداریەکانی خودی دابینکەر — کە پێش پشتڕاستکردنەوە پیشانت دەدرێن — سەرەڕای ئەم مەرجانە جێبەجێ دەبن."
+              }
+            ]
+          },
+          {
+            "heading": "بەرپرسیارێتییەکانت",
+            "blocks": [
+              {
+                "type": "bullet",
+                "text": "زانیاری وردی تەواو بدە، لەوانەش ناوی ڕاستی گەشتیارەکان و ناسنامەی دەرباز بۆ فڕۆکە."
+              },
+              {
+                "type": "bullet",
+                "text": "دڵنیابە کە بە یاسایی دەتوانیت حجزەکە بکەیت و تەمەنت لانیکەم ١٨ ساڵە، یان بە چاودێری سەرپەرشتیارێک کاردەکەیت."
+              },
+              {
+                "type": "bullet",
+                "text": "پێش گەشتکردن مەرجەکانی ڤیزا، چوونەژوورەوە و گەشت بۆ هەرێمی کوردستان و عێراق بپشکنە."
+              },
+              {
+                "type": "bullet",
+                "text": "پێش پشتڕاستکردنەوەی حجزێک، ڕێسا و سنوورداریەکانی هەر دابینکەرێک بخوێنەوە و پەسەندیان بکە."
+              },
+              {
+                "type": "bullet",
+                "text": "چوونەژوورەوەی هەژمارەکەت بپارێزە و ئەپەکە بە هەڵە بەکارمەهێنە."
+              }
+            ]
+          },
+          {
+            "heading": "نرخەکان و کرێی خزمەتگوزاری",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "نرخەکان پێش پشتڕاستکردنەوەی حجزەکە پیشان دەدرێن. لەوانەیە کرێیەکی خزمەتگوزاری بۆ بەکارهێنانی پلاتفۆرمەکە وەربگرین، کە بە ڕوونی لە کاتی پارەداندا پیشان دەدرێت. نرخەکانی دابینکەر لەوانەیە بەهۆی بەردەستبوون، وەرزەکان، یان جوڵەی دراوەوە بگۆڕێن هەتا حجزەکە پشتڕاست دەکرێتەوە."
+              }
+            ]
+          },
+          {
+            "heading": "ناوەڕۆکی زانیاری سروشت",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "بەشی «گەڕان بە سروشتدا» تەنها بۆ زانیاری گشتی پێشکەش کراوە. بارودۆخی ڕێڕەوەکان، کەشوهەوا، دەستگەیشتن و سەلامەتی لە ناوچە شاخاوی و دەرەوەکاندا دەگۆڕێن. ئەم ناوەڕۆکە گەرەنتی سەلامەتی یان دەستگەیشتن نییە. تۆ بەرپرسیاریت لە بڕیارەکانی خۆت کاتێک سەردانی هەر شوێنێک دەکەیت."
+              }
+            ]
+          },
+          {
+            "heading": "گۆڕانکاری لە ئەپ یان مەرجەکاندا",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "لەوانەیە کات بە کات ئەپەکە و ئەم مەرجانە نوێ بکەینەوە. وەشانی ئێستا، لەگەڵ بەرواری «دوایین نوێکردنەوە»ی، هەمیشە جێبەجێ دەبێت. بەردەوامبوون لە بەکارهێنانی ئەپەکە واتای پەسەندکردنی مەرجە نوێکراوەکانە."
+              }
+            ]
+          }
+        ]
+      },
+      "ar": {
+        "sections": [
+          {
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "بتنزيلك أو استخدامك KurdistanGO فإنك توافق على هذه الشروط والأحكام. يرجى قراءتها بعناية. إذا كنت لا توافق عليها، فيرجى عدم استخدام التطبيق."
+              }
+            ]
+          },
+          {
+            "heading": "دورنا كوسيط",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "KurdistanGO منصّة حجز. نحن لا نملك ولا نشغّل الرحلات الجوية أو المركبات أو الفنادق أو الجولات المعروضة في التطبيق. عند إجراء حجز، فإنك تبرم عقدًا مباشرًا مع مزوّد تلك الخدمة. ونحن نعمل فقط على تيسير ذلك الحجز. وتُطبَّق قواعد المزوّد وقيوده الخاصة — التي تُعرض عليك قبل التأكيد — بالإضافة إلى هذه الشروط."
+              }
+            ]
+          },
+          {
+            "heading": "مسؤولياتك",
+            "blocks": [
+              {
+                "type": "bullet",
+                "text": "تقديم معلومات دقيقة وكاملة، بما في ذلك أسماء المسافرين الصحيحة وهوية سارية للرحلات الجوية."
+              },
+              {
+                "type": "bullet",
+                "text": "التأكد من أهليتك القانونية لإجراء الحجز وأن عمرك 18 عامًا على الأقل، أو أنك تتصرف بمشاركة وليّ أمر."
+              },
+              {
+                "type": "bullet",
+                "text": "التحقق من متطلبات التأشيرة والدخول والسفر إلى إقليم كردستان والعراق قبل سفرك."
+              },
+              {
+                "type": "bullet",
+                "text": "قراءة قواعد كل مزوّد وقيوده وقبولها قبل تأكيد الحجز."
+              },
+              {
+                "type": "bullet",
+                "text": "الحفاظ على أمان بيانات دخول حسابك وعدم إساءة استخدام التطبيق."
+              }
+            ]
+          },
+          {
+            "heading": "الأسعار ورسوم الخدمة",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "تُعرض الأسعار قبل تأكيدك للحجز. وقد نفرض رسوم خدمة مقابل استخدام المنصّة، تُعرض بوضوح أثناء الدفع. وقد تتغيّر أسعار المزوّدين بسبب التوافر أو الموسم أو تقلّبات العملة إلى حين تأكيد الحجز."
+              }
+            ]
+          },
+          {
+            "heading": "محتوى معلومات الطبيعة",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "يُقدَّم قسم «استكشاف الطبيعة» لأغراض المعلومات العامة فقط. فأحوال المسارات والطقس وإمكانية الوصول والسلامة في المناطق الجبلية والمفتوحة قابلة للتغيّر. وهذا المحتوى ليس ضمانًا للسلامة أو لإمكانية الوصول. وأنت مسؤول عن قراراتك عند زيارة أي موقع."
+              }
+            ]
+          },
+          {
+            "heading": "التغييرات على التطبيق أو الشروط",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "قد نحدّث التطبيق وهذه الشروط من حين لآخر. والنسخة الحالية، بتاريخ «آخر تحديث» الخاص بها، هي التي تُطبَّق دائمًا. واستمرارك في استخدام التطبيق يعني قبولك للشروط المحدَّثة."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+
+  "privacy_policy": {
+    "version": 1,
+    "legalReviewed": false,
+    "updatedAt": "2026-08-10T14:30:00Z",
+    "content": {
+      "en": {
+        "sections": [
+          {
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "This Privacy Policy explains how KurdistanGO (“we”, “us”, “the app”) collects, uses, and protects your personal information when you use our app to book flights, car rentals, hotels, and tours, or to browse nature information about the Kurdistan Region of Iraq."
+              }
+            ]
+          },
+          {
+            "heading": "Information we collect",
+            "blocks": [
+              {
+                "type": "bullet",
+                "lead": "Account & contact details:",
+                "text": "name, email, phone number, and preferred language."
+              },
+              {
+                "type": "bullet",
+                "lead": "Booking details:",
+                "text": "travel dates, destinations, number of travelers, and the names of people you book for."
+              },
+              {
+                "type": "bullet",
+                "lead": "Identity documents:",
+                "text": "passport or national ID details where required for flight ticketing or certain bookings."
+              },
+              {
+                "type": "bullet",
+                "lead": "Payment information:",
+                "text": "the details needed to process your payment. Card details are handled by our secure payment provider."
+              },
+              {
+                "type": "bullet",
+                "lead": "Automatic data:",
+                "text": "IP address, device type, operating system, app version, approximate location, and usage activity."
+              }
+            ]
+          },
+          {
+            "heading": "How we use your information",
+            "blocks": [
+              {
+                "type": "bullet",
+                "text": "To process and confirm your bookings with the relevant provider."
+              },
+              {
+                "type": "bullet",
+                "text": "To contact you about your booking, changes, or support requests."
+              },
+              {
+                "type": "bullet",
+                "text": "To prevent fraud, verify identity, and keep the platform secure."
+              },
+              {
+                "type": "bullet",
+                "text": "To improve the app and personalise the content you see."
+              },
+              {
+                "type": "bullet",
+                "text": "To send you offers or updates, only where you have agreed to receive them."
+              }
+            ]
+          },
+          {
+            "heading": "Sharing your information",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "KurdistanGO is a booking platform that connects you with third-party providers. To complete a booking, we share the relevant details with the airline, car rental company, hotel, or tour operator you choose. These providers process your data under their own privacy policies. We may also share data with payment processors, and with authorities where required by law."
+              }
+            ]
+          },
+          {
+            "heading": "Data retention & your rights",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "We keep your data only as long as needed for the purposes above or as required by law. You may request access to, correction of, or deletion of your personal data, and you may withdraw consent to marketing at any time by contacting us at the address in the Contact section."
+              }
+            ]
+          },
+          {
+            "heading": "Children",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "The app is not intended for users under the age of 18 without the involvement of a parent or guardian. We do not knowingly collect data from children without such consent."
+              }
+            ]
+          }
+        ]
+      },
+      "ku": {
+        "sections": [
+          {
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "ئەم سیاسەتی تایبەتمەندییە ڕوونی دەکاتەوە کە KurdistanGO («ئێمە»، «ئەپەکە») چۆن زانیارییە کەسییەکانت کۆدەکاتەوە، بەکاریان دەهێنێت و پارێزگارییان لێ دەکات، کاتێک ئەپەکەمان بەکاردەهێنیت بۆ حجزکردنی فڕۆکە، ئۆتۆمبێلی بەکرێ، هۆتێل و گەشت، یان بۆ بینینی زانیاری سروشت دەربارەی هەرێمی کوردستانی عێراق."
+              }
+            ]
+          },
+          {
+            "heading": "ئەو زانیارییانەی کۆیان دەکەینەوە",
+            "blocks": [
+              {
+                "type": "bullet",
+                "lead": "هەژمار و زانیاری پەیوەندی:",
+                "text": "ناو، ئیمەیڵ، ژمارەی مۆبایل، و زمانی دڵخواز."
+              },
+              {
+                "type": "bullet",
+                "lead": "زانیاری حجز:",
+                "text": "بەرواری گەشت، شوێنەکان، ژمارەی گەشتیارەکان، و ناوی ئەو کەسانەی حجزیان بۆ دەکەیت."
+              },
+              {
+                "type": "bullet",
+                "lead": "بەڵگەنامەی ناسنامە:",
+                "text": "زانیاری پاسپۆرت یان ناسنامەی نیشتمانی لەو کاتانەی پێویستن بۆ بلیتی فڕۆکە یان هەندێک حجز."
+              },
+              {
+                "type": "bullet",
+                "lead": "زانیاری پارەدان:",
+                "text": "ئەو زانیارییانەی پێویستن بۆ جێبەجێکردنی پارەدانەکەت. زانیاری کارتەکان لەلایەن دابینکەری پارەدانی پارێزراومانەوە مامەڵەیان لەگەڵ دەکرێت."
+              },
+              {
+                "type": "bullet",
+                "lead": "زانیاری خۆکار:",
+                "text": "ناونیشانی IP، جۆری ئامێر، سیستەمی کارپێکردن، وەشانی ئەپ، شوێنی نزیکەیی، و چالاکی بەکارهێنان."
+              }
+            ]
+          },
+          {
+            "heading": "چۆن زانیارییەکانت بەکاردەهێنین",
+            "blocks": [
+              {
+                "type": "bullet",
+                "text": "بۆ جێبەجێکردن و پشتڕاستکردنەوەی حجزەکانت لەگەڵ دابینکەری پەیوەندیدار."
+              },
+              {
+                "type": "bullet",
+                "text": "بۆ پەیوەندیکردن پێت دەربارەی حجزەکەت، گۆڕانکارییەکان، یان داواکاری پشتگیری."
+              },
+              {
+                "type": "bullet",
+                "text": "بۆ ڕێگریکردن لە فێڵ، پشتڕاستکردنەوەی ناسنامە، و پاراستنی سەلامەتی پلاتفۆرمەکە."
+              },
+              {
+                "type": "bullet",
+                "text": "بۆ باشترکردنی ئەپەکە و کەسیکردنی ئەو ناوەڕۆکەی دەیبینیت."
+              },
+              {
+                "type": "bullet",
+                "text": "بۆ ناردنی پێشکەشکراوەکان یان نوێکارییەکان، تەنها لەو کاتەی ڕەزامەندیت دەربڕیوە بۆ وەرگرتنیان."
+              }
+            ]
+          },
+          {
+            "heading": "هاوبەشکردنی زانیارییەکانت",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "KurdistanGO پلاتفۆرمێکی حجزکردنە کە تۆ بە دابینکەرانی لایەنی سێیەمەوە دەبەستێتەوە. بۆ تەواوکردنی حجزێک، زانیارییە پەیوەندیدارەکان لەگەڵ ئەو کۆمپانیای فڕۆکەوانی، کۆمپانیای ئۆتۆمبێلی بەکرێ، هۆتێل، یان ڕێکخەری گەشتەی هەڵتبژاردووە هاوبەش دەکەین. ئەم دابینکەرانە زانیارییەکانت بەپێی سیاسەتی تایبەتمەندی خۆیان پرۆسێس دەکەن. لەوانەشە زانیاری لەگەڵ پرۆسێسکەرانی پارەدان و لەگەڵ دەسەڵاتدارەکان هاوبەش بکەین کاتێک یاسا داوای بکات."
+              }
+            ]
+          },
+          {
+            "heading": "پاراستنی زانیاری و مافەکانت",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "زانیارییەکانت تەنها بۆ ئەو ماوەیە دەپارێزین کە پێویستە بۆ مەبەستەکانی سەرەوە یان بەپێی یاسا داواکراوە. دەتوانیت داوای دەستگەیشتن، ڕاستکردنەوە، یان سڕینەوەی زانیارییە کەسییەکانت بکەیت، هەروەها دەتوانیت لە هەر کاتێکدا ڕەزامەندیت بۆ بازاڕکردن پەشیمان بکەیتەوە بە پەیوەندیکردن پێمان لەو ناونیشانەی لە بەشی پەیوەندیدایە."
+              }
+            ]
+          },
+          {
+            "heading": "منداڵان",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "ئەپەکە بۆ بەکارهێنەرانی خوار تەمەنی ١٨ ساڵ نییە بەبێ بەشداری دایک و باوک یان چاودێر. بە ئاگاداری زانیاری لە منداڵانەوە کۆناکەینەوە بەبێ ئەو ڕەزامەندییە."
+              }
+            ]
+          }
+        ]
+      },
+      "ar": {
+        "sections": [
+          {
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "توضّح سياسة الخصوصية هذه كيف يقوم KurdistanGO («نحن»، «التطبيق») بجمع معلوماتك الشخصية واستخدامها وحمايتها عند استخدامك تطبيقنا لحجز الرحلات الجوية وتأجير السيارات والفنادق والجولات، أو لتصفّح معلومات الطبيعة عن إقليم كردستان العراق."
+              }
+            ]
+          },
+          {
+            "heading": "المعلومات التي نجمعها",
+            "blocks": [
+              {
+                "type": "bullet",
+                "lead": "بيانات الحساب والتواصل:",
+                "text": "الاسم والبريد الإلكتروني ورقم الهاتف واللغة المفضّلة."
+              },
+              {
+                "type": "bullet",
+                "lead": "تفاصيل الحجز:",
+                "text": "تواريخ السفر والوجهات وعدد المسافرين وأسماء الأشخاص الذين تحجز لهم."
+              },
+              {
+                "type": "bullet",
+                "lead": "وثائق الهوية:",
+                "text": "بيانات جواز السفر أو الهوية الوطنية حيثما يلزم لإصدار تذاكر الطيران أو لبعض الحجوزات."
+              },
+              {
+                "type": "bullet",
+                "lead": "معلومات الدفع:",
+                "text": "البيانات اللازمة لمعالجة دفعتك. تتم معالجة بيانات البطاقة لدى مزوّد الدفع الآمن الخاص بنا."
+              },
+              {
+                "type": "bullet",
+                "lead": "البيانات التلقائية:",
+                "text": "عنوان IP ونوع الجهاز ونظام التشغيل وإصدار التطبيق والموقع التقريبي ونشاط الاستخدام."
+              }
+            ]
+          },
+          {
+            "heading": "كيف نستخدم معلوماتك",
+            "blocks": [
+              {
+                "type": "bullet",
+                "text": "لمعالجة حجوزاتك وتأكيدها مع المزوّد المعني."
+              },
+              {
+                "type": "bullet",
+                "text": "للتواصل معك بشأن حجزك أو التغييرات أو طلبات الدعم."
+              },
+              {
+                "type": "bullet",
+                "text": "لمنع الاحتيال والتحقق من الهوية والحفاظ على أمان المنصّة."
+              },
+              {
+                "type": "bullet",
+                "text": "لتحسين التطبيق وتخصيص المحتوى الذي تراه."
+              },
+              {
+                "type": "bullet",
+                "text": "لإرسال العروض أو التحديثات، فقط عندما توافق على تلقّيها."
+              }
+            ]
+          },
+          {
+            "heading": "مشاركة معلوماتك",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "KurdistanGO منصّة حجز تربطك بمزوّدين خارجيين. لإتمام الحجز، نشارك التفاصيل ذات الصلة مع شركة الطيران أو شركة تأجير السيارات أو الفندق أو منظّم الجولات الذي تختاره. يعالج هؤلاء المزوّدون بياناتك وفق سياسات الخصوصية الخاصة بهم. وقد نشارك البيانات أيضًا مع معالِجي الدفع ومع الجهات المختصة عندما يقتضي القانون ذلك."
+              }
+            ]
+          },
+          {
+            "heading": "الاحتفاظ بالبيانات وحقوقك",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "نحتفظ ببياناتك فقط للمدة اللازمة للأغراض المذكورة أعلاه أو وفق ما يقتضيه القانون. يمكنك طلب الاطّلاع على بياناتك الشخصية أو تصحيحها أو حذفها، كما يمكنك سحب موافقتك على التسويق في أي وقت بمراسلتنا على العنوان الوارد في قسم التواصل."
+              }
+            ]
+          },
+          {
+            "heading": "الأطفال",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "التطبيق غير مخصّص للمستخدمين دون سن 18 عامًا من دون مشاركة أحد الوالدين أو الوصي. ولا نجمع عن قصد بيانات من الأطفال من دون هذه الموافقة."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+
+  "cancellation_refunds": {
+    "version": 1,
+    "legalReviewed": false,
+    "updatedAt": "2026-08-10T14:30:00Z",
+    "content": {
+      "en": {
+        "sections": [
+          {
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "Cancellation and refund rules depend mainly on the provider you book with. The specific rules for each booking are shown before you pay and in your confirmation."
+              }
+            ]
+          },
+          {
+            "heading": "Provider rules apply",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "Each airline, car rental company, hotel, and tour operator sets its own cancellation and refund terms. Some bookings can be cancelled free of charge before a deadline; others are non-refundable. Always check the rules shown for your specific booking before confirming."
+              }
+            ]
+          },
+          {
+            "heading": "How to cancel",
+            "blocks": [
+              {
+                "type": "bullet",
+                "text": "Open the booking in “My Trips” and select “Cancel booking”, or contact our support team."
+              },
+              {
+                "type": "bullet",
+                "text": "The cancellation deadline and any fees are shown before you confirm the cancellation."
+              },
+              {
+                "type": "bullet",
+                "text": "A no-show (not arriving without cancelling) may result in a charge and no refund, per provider rules."
+              }
+            ]
+          },
+          {
+            "heading": "Refunds",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "Approved refunds are returned to your original payment method. The provider that received your payment issues the refund, and timing depends on the provider and your bank — this can take up to 30 days. Our platform service fee is non-refundable unless stated otherwise at the time of booking."
+              }
+            ]
+          },
+          {
+            "heading": "Changes by the provider",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "Occasionally a provider may change or cancel a booking (for example, a cancelled flight or a closed hotel). If this happens, we will notify you as soon as possible and help you find an alternative or arrange a refund where applicable."
+              }
+            ]
+          }
+        ]
+      },
+      "ku": {
+        "sections": [
+          {
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "ڕێساکانی هەڵوەشاندنەوە و گەڕاندنەوەی پارە بە شێوەیەکی سەرەکی بەندن بەو دابینکەرەی لەگەڵی حجز دەکەیت. ڕێسا تایبەتەکانی هەر حجزێک پێش پارەدان و لە پشتڕاستکردنەوەکەتدا پیشان دەدرێن."
+              }
+            ]
+          },
+          {
+            "heading": "ڕێساکانی دابینکەر جێبەجێ دەبن",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "هەر کۆمپانیایەکی فڕۆکەوانی، کۆمپانیای ئۆتۆمبێلی بەکرێ، هۆتێل و ڕێکخەری گەشت مەرجەکانی هەڵوەشاندنەوە و گەڕاندنەوەی پارەی خۆی دادەنێت. هەندێک حجز دەکرێت پێش کاتی دیاریکراو بەبێ کرێ هەڵبوەشێنرێنەوە؛ هەندێکی تر پارەیان ناگەڕێتەوە. هەمیشە پێش پشتڕاستکردنەوە ئەو ڕێسایانە بپشکنە کە بۆ حجزەکەت پیشان دەدرێن."
+              }
+            ]
+          },
+          {
+            "heading": "چۆن هەڵبوەشێنیتەوە",
+            "blocks": [
+              {
+                "type": "bullet",
+                "text": "حجزەکە لە «گەشتەکانم» بکەرەوە و «هەڵوەشاندنەوەی حجز» هەڵبژێرە، یان پەیوەندی بە تیمی پشتگیریمانەوە بکە."
+              },
+              {
+                "type": "bullet",
+                "text": "کۆتا کاتی هەڵوەشاندنەوە و هەر کرێیەک پێش پشتڕاستکردنەوەی هەڵوەشاندنەوەکە پیشان دەدرێن."
+              },
+              {
+                "type": "bullet",
+                "text": "ئامادەنەبوون (نەهاتن بەبێ هەڵوەشاندنەوە) لەوانەیە ببێتە هۆی کرێ و نەگەڕانەوەی پارە، بەپێی ڕێساکانی دابینکەر."
+              }
+            ]
+          },
+          {
+            "heading": "گەڕاندنەوەی پارە",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "پارە گەڕێنراوە پەسەندکراوەکان بۆ هەمان ڕێگای پارەدانی سەرەتاییت دەگەڕێنەوە. ئەو دابینکەرەی پارەکەی وەرگرتووە پارەکە دەگەڕێنێتەوە، و کاتەکەی بەندە بە دابینکەر و بانکەکەتەوە — لەوانەیە تا ٣٠ ڕۆژ بخایەنێت. کرێی خزمەتگوزاری پلاتفۆرمەکەمان ناگەڕێتەوە، مەگەر لە کاتی حجزکردندا بە پێچەوانەوە باسکرابێت."
+              }
+            ]
+          },
+          {
+            "heading": "گۆڕانکاری لەلایەن دابینکەرەوە",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "جار جار لەوانەیە دابینکەرێک حجزێک بگۆڕێت یان هەڵیبوەشێنێتەوە (بۆ نموونە فڕینێکی هەڵوەشێنراوە یان هۆتێلێکی داخراو). ئەگەر ئەمە ڕوویدا، بە زووترین کات ئاگادارت دەکەینەوە و یارمەتیت دەدەین بۆ دۆزینەوەی بژاردەیەکی تر یان ڕێکخستنی گەڕاندنەوەی پارە لە کاتی گونجاودا."
+              }
+            ]
+          }
+        ]
+      },
+      "ar": {
+        "sections": [
+          {
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "تعتمد قواعد الإلغاء واسترداد الأموال بشكل أساسي على المزوّد الذي تحجز لديه. وتُعرض القواعد الخاصة بكل حجز قبل الدفع وفي رسالة التأكيد."
+              }
+            ]
+          },
+          {
+            "heading": "تُطبَّق قواعد المزوّد",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "تضع كل شركة طيران وشركة تأجير سيارات وفندق ومنظّم جولات شروط الإلغاء والاسترداد الخاصة بها. فبعض الحجوزات يمكن إلغاؤها مجانًا قبل موعد محدّد، وبعضها غير قابل للاسترداد. تحقّق دائمًا من القواعد المعروضة لحجزك تحديدًا قبل التأكيد."
+              }
+            ]
+          },
+          {
+            "heading": "كيفية الإلغاء",
+            "blocks": [
+              {
+                "type": "bullet",
+                "text": "افتح الحجز في «رحلاتي» واختر «إلغاء الحجز»، أو تواصل مع فريق الدعم لدينا."
+              },
+              {
+                "type": "bullet",
+                "text": "يُعرض الموعد النهائي للإلغاء وأي رسوم قبل تأكيدك للإلغاء."
+              },
+              {
+                "type": "bullet",
+                "text": "قد يؤدي عدم الحضور (عدم الوصول من دون إلغاء) إلى فرض رسوم وعدم الاسترداد، وفقًا لقواعد المزوّد."
+              }
+            ]
+          },
+          {
+            "heading": "المبالغ المستردّة",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "تُعاد المبالغ المستردّة المعتمدة إلى وسيلة الدفع الأصلية. ويصدر الاسترداد عن المزوّد الذي تلقّى دفعتك، ويعتمد التوقيت على المزوّد وعلى مصرفك — وقد يستغرق ذلك حتى 30 يومًا. ورسوم خدمة منصّتنا غير قابلة للاسترداد ما لم يُذكر خلاف ذلك عند الحجز."
+              }
+            ]
+          },
+          {
+            "heading": "التغييرات من جانب المزوّد",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "قد يقوم المزوّد أحيانًا بتغيير حجز أو إلغائه (مثل إلغاء رحلة جوية أو إغلاق فندق). وإذا حدث ذلك، سنُعلمك في أقرب وقت ممكن ونساعدك في إيجاد بديل أو ترتيب استرداد حيثما ينطبق."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+
+  "payment_policy": {
+    "version": 1,
+    "legalReviewed": false,
+    "updatedAt": "2026-08-10T14:30:00Z",
+    "content": {
+      "en": {
+        "sections": [
+          {
+            "heading": "Accepted payment methods",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "KurdistanGO accepts [list your methods here — e.g. Visa/Mastercard, FIB, FastPay, Zain Cash, and/or cash on collection where offered]. The available methods for each booking are shown at checkout."
+              }
+            ]
+          },
+          {
+            "heading": "Currency & charges",
+            "blocks": [
+              {
+                "type": "bullet",
+                "text": "Prices are displayed in [Iraqi Dinar (IQD) / US Dollar (USD)]. The final charge currency is shown before payment."
+              },
+              {
+                "type": "bullet",
+                "text": "Depending on the provider, you may pay in full at booking, pay a deposit, or pay at the point of service."
+              },
+              {
+                "type": "bullet",
+                "text": "Any applicable service fee is shown clearly before you confirm."
+              }
+            ]
+          },
+          {
+            "heading": "Security",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "Payments are processed through a secure payment provider. We do not store your full card details on our own servers."
+              }
+            ]
+          }
+        ]
+      },
+      "ku": {
+        "sections": [
+          {
+            "heading": "ڕێگا پەسەندکراوەکانی پارەدان",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "KurdistanGO ئەمانە قبوڵ دەکات: [لێرەدا ڕێگاکانت بنووسە — بۆ نموونە ڤیزا/ماستەرکارد، FIB، FastPay، زەین کاش، و/یان پارەی نەقد لە کاتی وەرگرتندا ئەگەر بەردەست بێت]. ئەو ڕێگایانەی بۆ هەر حجزێک بەردەستن لە کاتی پارەداندا پیشان دەدرێن."
+              }
+            ]
+          },
+          {
+            "heading": "دراو و کرێیەکان",
+            "blocks": [
+              {
+                "type": "bullet",
+                "text": "نرخەکان بەم دراوە پیشان دەدرێن: [دیناری عێراقی (IQD) / دۆلاری ئەمریکی (USD)]. دراوی کۆتایی پارەدان پێش پارەدان پیشان دەدرێت."
+              },
+              {
+                "type": "bullet",
+                "text": "بەپێی دابینکەر، لەوانەیە لە کاتی حجزکردندا هەمووی بدەیت، پێشەکییەک بدەیت، یان لە کاتی وەرگرتنی خزمەتگوزارییەکەدا بدەیت."
+              },
+              {
+                "type": "bullet",
+                "text": "هەر کرێیەکی خزمەتگوزاری کە جێبەجێ دەبێت، پێش پشتڕاستکردنەوە بە ڕوونی پیشان دەدرێت."
+              }
+            ]
+          },
+          {
+            "heading": "پاراستن",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "پارەدانەکان لە ڕێگەی دابینکەرێکی پارەدانی پارێزراوەوە جێبەجێ دەکرێن. ئێمە زانیاری تەواوی کارتەکەت لەسەر سێرڤەرەکانی خۆمان هەڵناگرین."
+              }
+            ]
+          }
+        ]
+      },
+      "ar": {
+        "sections": [
+          {
+            "heading": "طرق الدفع المقبولة",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "يقبل KurdistanGO [أدرج طرقك هنا — مثل فيزا/ماستركارد، FIB، FastPay، زين كاش، و/أو الدفع نقدًا عند الاستلام حيثما يتوفر]. وتُعرض الطرق المتاحة لكل حجز عند الدفع."
+              }
+            ]
+          },
+          {
+            "heading": "العملة والرسوم",
+            "blocks": [
+              {
+                "type": "bullet",
+                "text": "تُعرض الأسعار بـ [الدينار العراقي (IQD) / الدولار الأمريكي (USD)]. وتُعرض عملة الخصم النهائية قبل الدفع."
+              },
+              {
+                "type": "bullet",
+                "text": "حسب المزوّد، قد تدفع المبلغ كاملًا عند الحجز، أو تدفع عربونًا، أو تدفع عند تلقّي الخدمة."
+              },
+              {
+                "type": "bullet",
+                "text": "تُعرض أي رسوم خدمة سارية بوضوح قبل التأكيد."
+              }
+            ]
+          },
+          {
+            "heading": "الأمان",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "تُعالَج المدفوعات عبر مزوّد دفع آمن. ونحن لا نخزّن بيانات بطاقتك كاملة على خوادمنا."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+
+  "liability_disclaimer": {
+    "version": 1,
+    "legalReviewed": false,
+    "updatedAt": "2026-08-10T14:30:00Z",
+    "content": {
+      "en": {
+        "sections": [
+          {
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "Because KurdistanGO is a booking platform and not the service provider, our responsibility is limited as set out below."
+              }
+            ]
+          },
+          {
+            "heading": "Service quality",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "We are not responsible for the quality, safety, delays, cancellations, or conduct of the flights, vehicles, hotels, or tours you book. Any issue with the service itself is between you and the provider, though we will help where we reasonably can."
+              }
+            ]
+          },
+          {
+            "heading": "Outdoor & nature activities",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "Travel to mountains, nature sites, and outdoor areas in the Kurdistan Region carries inherent risks, including weather, terrain, and remoteness. You take part in such activities at your own risk and are responsible for your own safety and preparation. We strongly recommend suitable travel insurance."
+              }
+            ]
+          },
+          {
+            "heading": "Information accuracy",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "We work to keep information accurate and up to date, but we do not guarantee that all content, prices, or availability shown in the app are error-free at all times."
+              }
+            ]
+          },
+          {
+            "heading": "Limitation of liability",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "To the extent permitted by law, KurdistanGO is not liable for indirect or consequential losses arising from your use of the app or from a booking made through it. Nothing in this policy removes rights you may have under applicable Iraqi and Kurdistan Region consumer law."
+              }
+            ]
+          }
+        ]
+      },
+      "ku": {
+        "sections": [
+          {
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "لەبەر ئەوەی KurdistanGO پلاتفۆرمێکی حجزکردنە و دابینکەری خزمەتگوزارییەکە نییە، بەرپرسیارێتیمان سنووردارە بەو شێوەیەی لە خوارەوە هاتووە."
+              }
+            ]
+          },
+          {
+            "heading": "کوالیتی خزمەتگوزاری",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "ئێمە بەرپرسیار نین لە کوالیتی، سەلامەتی، دواکەوتن، هەڵوەشاندنەوە، یان ڕەفتاری ئەو فڕۆکە، ئۆتۆمبێل، هۆتێل، یان گەشتانەی حجزیان دەکەیت. هەر کێشەیەک لەگەڵ خودی خزمەتگوزارییەکە لە نێوان تۆ و دابینکەرەکەدایە، هەرچەندە یارمەتیت دەدەین لەو سنوورەی دەتوانین."
+              }
+            ]
+          },
+          {
+            "heading": "چالاکی دەرەوە و سروشت",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "گەشتکردن بۆ شاخەکان، شوێنە سروشتییەکان و ناوچە کراوەکانی هەرێمی کوردستان مەترسی سروشتی خۆی هەیە، لەوانە کەشوهەوا، ڕووی زەوی، و دوورییەکە. تۆ بە بەرپرسیارێتی خۆت بەشداری لەم چالاکییانەدا دەکەیت و بەرپرسیاریت لە سەلامەتی و ئامادەکاری خۆت. بە توندی ئامۆژگاریت دەکەین کە دڵنیایی گەشتی گونجاو وەربگریت."
+              }
+            ]
+          },
+          {
+            "heading": "وردی زانیاری",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "کار دەکەین بۆ ئەوەی زانیارییەکان ورد و نوێ بن، بەڵام گەرەنتی ئەوە ناکەین کە هەموو ناوەڕۆک، نرخ، یان بەردەستبوونێکی پیشاندراو لە ئەپەکەدا لە هەموو کاتێکدا بێ هەڵە بێت."
+              }
+            ]
+          },
+          {
+            "heading": "سنووردارکردنی بەرپرسیارێتی",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "تا ئەو ڕادەیەی یاسا ڕێگای پێدەدات، KurdistanGO بەرپرسیار نییە لە زیانە ناڕاستەوخۆ یان لاوەکییەکان کە لە بەکارهێنانی ئەپەکە یان لە حجزێکی لە ڕێگەیەوە کراو دەردەچن. هیچ شتێک لەم سیاسەتەدا ئەو مافانە لانابات کە لەژێر یاسای بەکاربەری عێراق و هەرێمی کوردستاندا هەتە."
+              }
+            ]
+          }
+        ]
+      },
+      "ar": {
+        "sections": [
+          {
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "لأن KurdistanGO منصّة حجز وليس مزوّد الخدمة، فإن مسؤوليتنا محدودة على النحو المبيَّن أدناه."
+              }
+            ]
+          },
+          {
+            "heading": "جودة الخدمة",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "لسنا مسؤولين عن جودة أو سلامة أو تأخّر أو إلغاء أو سلوك الرحلات الجوية أو المركبات أو الفنادق أو الجولات التي تحجزها. وأي إشكال يتعلق بالخدمة نفسها هو بينك وبين المزوّد، وإن كنّا سنساعد بالقدر المعقول."
+              }
+            ]
+          },
+          {
+            "heading": "الأنشطة الخارجية والطبيعية",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "ينطوي السفر إلى الجبال والمواقع الطبيعية والمناطق المفتوحة في إقليم كردستان على مخاطر متأصّلة، منها الطقس والتضاريس وبُعد الموقع. وأنت تشارك في هذه الأنشطة على مسؤوليتك الخاصة وتتحمّل مسؤولية سلامتك واستعدادك. ونوصي بشدّة بالحصول على تأمين سفر مناسب."
+              }
+            ]
+          },
+          {
+            "heading": "دقة المعلومات",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "نعمل على إبقاء المعلومات دقيقة ومحدَّثة، لكننا لا نضمن خلوّ كل المحتوى أو الأسعار أو التوافر المعروض في التطبيق من الأخطاء في جميع الأوقات."
+              }
+            ]
+          },
+          {
+            "heading": "حدود المسؤولية",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "إلى الحد الذي يسمح به القانون، لا يتحمّل KurdistanGO المسؤولية عن الخسائر غير المباشرة أو التبعية الناشئة عن استخدامك التطبيق أو عن حجز تم من خلاله. ولا يُسقط أي بند في هذه السياسة الحقوق التي قد تكون لك بموجب قانون حماية المستهلك المعمول به في العراق وإقليم كردستان."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+
+  "contact_complaints": {
+    "version": 1,
+    "legalReviewed": false,
+    "updatedAt": "2026-08-10T14:30:00Z",
+    "content": {
+      "en": {
+        "sections": [
+          {
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "If you have a question, a complaint, or a request about your personal data, please contact us:"
+              },
+              {
+                "type": "bullet",
+                "lead": "Email:",
+                "text": "[support@yourdomain.com]"
+              },
+              {
+                "type": "bullet",
+                "lead": "Phone / WhatsApp:",
+                "text": "[insert number]"
+              },
+              {
+                "type": "bullet",
+                "lead": "In-app:",
+                "text": "Menu → Support / Help"
+              },
+              {
+                "type": "bullet",
+                "lead": "Business name & address:",
+                "text": "[insert your registered business name and address]"
+              },
+              {
+                "type": "paragraph",
+                "text": "We aim to respond to all enquiries within [X] business days. If your complaint concerns a specific booking, please include your booking reference so we can help faster."
+              }
+            ]
+          },
+          {
+            "heading": "Note on placeholders",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "Text shown in [square brackets] must be replaced with your real business details before you publish. Because this app handles payments and identity documents, have a licensed lawyer review the final wording against Iraqi and Kurdistan Region law before going live."
+              }
+            ]
+          }
+        ]
+      },
+      "ku": {
+        "sections": [
+          {
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "ئەگەر پرسیارێک، سکاڵایەک، یان داواکارییەکت دەربارەی زانیارییە کەسییەکانت هەیە، تکایە پەیوەندیمان پێوە بکە:"
+              },
+              {
+                "type": "bullet",
+                "lead": "ئیمەیڵ:",
+                "text": "[support@yourdomain.com]"
+              },
+              {
+                "type": "bullet",
+                "lead": "تەلەفۆن / واتساپ:",
+                "text": "[ژمارە دابنێ]"
+              },
+              {
+                "type": "bullet",
+                "lead": "لە ناو ئەپەکەدا:",
+                "text": "مێنیو → پشتگیری / یارمەتی"
+              },
+              {
+                "type": "bullet",
+                "lead": "ناوی بازرگانی و ناونیشان:",
+                "text": "[ناوی تۆمارکراوی بازرگانی و ناونیشانەکەت دابنێ]"
+              },
+              {
+                "type": "paragraph",
+                "text": "ئامانجمان ئەوەیە وەڵامی هەموو پرسیارەکان لە ماوەی [X] ڕۆژی کاردا بدەینەوە. ئەگەر سکاڵاکەت دەربارەی حجزێکی دیاریکراوە، تکایە ژمارەی ئاماژەی حجزەکەت لەگەڵدا بنێرە بۆ ئەوەی خێراتر یارمەتیت بدەین."
+              }
+            ]
+          },
+          {
+            "heading": "تێبینی دەربارەی شوێنگرەکان",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "ئەو دەقانەی لە [کەوانەی چوارگۆشە]دا هاتوون، دەبێت پێش بڵاوکردنەوە بە زانیاری ڕاستەقینەی بازرگانییەکەت بگۆڕدرێن. لەبەر ئەوەی ئەم ئەپە مامەڵە لەگەڵ پارەدان و بەڵگەنامەی ناسنامەدا دەکات، پێش دەستپێکردن پارێزەرێکی مۆڵەتدار وشەکانی کۆتایی بەرامبەر یاسای عێراق و هەرێمی کوردستان بپشکنێت."
+              }
+            ]
+          }
+        ]
+      },
+      "ar": {
+        "sections": [
+          {
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "إذا كان لديك سؤال أو شكوى أو طلب بخصوص بياناتك الشخصية، يرجى التواصل معنا:"
+              },
+              {
+                "type": "bullet",
+                "lead": "البريد الإلكتروني:",
+                "text": "[support@yourdomain.com]"
+              },
+              {
+                "type": "bullet",
+                "lead": "الهاتف / واتساب:",
+                "text": "[أدرج الرقم]"
+              },
+              {
+                "type": "bullet",
+                "lead": "داخل التطبيق:",
+                "text": "القائمة ← الدعم / المساعدة"
+              },
+              {
+                "type": "bullet",
+                "lead": "الاسم التجاري والعنوان:",
+                "text": "[أدرج اسم نشاطك التجاري المسجَّل وعنوانه]"
+              },
+              {
+                "type": "paragraph",
+                "text": "نهدف إلى الرد على جميع الاستفسارات خلال [X] أيام عمل. وإذا كانت شكواك تخص حجزًا معيّنًا، يرجى إرفاق الرقم المرجعي للحجز لنتمكن من مساعدتك بشكل أسرع."
+              }
+            ]
+          },
+          {
+            "heading": "ملاحظة بشأن العناصر النائبة",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "يجب استبدال النص الوارد بين [أقواس مربّعة] ببيانات نشاطك التجاري الحقيقية قبل النشر. ولأن هذا التطبيق يتعامل مع المدفوعات ووثائق الهوية، اطلب من محامٍ مرخَّص مراجعة الصياغة النهائية وفق قانون العراق وإقليم كردستان قبل الإطلاق."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+
+  "account_data_deletion": {
+    "version": 1,
+    "legalReviewed": false,
+    "updatedAt": "2026-08-10T14:30:00Z",
+    "content": {
+      "en": {
+        "sections": [
+          {
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "You can request deletion of your KurdistanGO account and personal data at any time."
+              }
+            ]
+          },
+          {
+            "heading": "How to delete your account",
+            "blocks": [
+              {
+                "type": "bullet",
+                "lead": "In-app:",
+                "text": "Menu → Delete Account, or"
+              },
+              {
+                "type": "bullet",
+                "text": "Email us at [support@yourdomain.com] with the subject “Account Deletion Request” from your registered email or phone number."
+              }
+            ]
+          },
+          {
+            "heading": "What happens when you delete your account",
+            "blocks": [
+              {
+                "type": "bullet",
+                "text": "Your profile, saved details, and app login are permanently removed."
+              },
+              {
+                "type": "bullet",
+                "text": "Your booking history and any data we’re legally required to keep (e.g. for tax, fraud prevention, or dispute records) may be retained for the period required by Iraqi and Kurdistan Region law, then deleted."
+              },
+              {
+                "type": "bullet",
+                "text": "Data already shared with a provider (airline, car rental company, hotel, or tour operator) for a completed or active booking is subject to that provider’s own retention and privacy rules — we cannot delete it on their behalf."
+              },
+              {
+                "type": "bullet",
+                "text": "Deletion does not cancel any active or upcoming bookings. Please cancel or complete these first, or contact support for help."
+              }
+            ]
+          },
+          {
+            "heading": "Processing time",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "We aim to complete deletion requests within [X] business days and will confirm by email once it’s done."
+              }
+            ]
+          },
+          {
+            "heading": "Before you request deletion",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "Deleting your account is permanent and cannot be undone. You will lose access to your booking history, saved preferences, and any loyalty or credit balance in the app."
+              }
+            ]
+          }
+        ]
+      },
+      "ku": {
+        "sections": [
+          {
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "دەتوانیت لە هەر کاتێکدا داوای سڕینەوەی هەژماری KurdistanGO و زانیارییە کەسییەکانت بکەیت."
+              }
+            ]
+          },
+          {
+            "heading": "چۆن هەژمارەکەت بسڕیتەوە",
+            "blocks": [
+              {
+                "type": "bullet",
+                "lead": "لە ناو ئەپەکەدا:",
+                "text": "مێنیو → سڕینەوەی هەژمار، یان"
+              },
+              {
+                "type": "bullet",
+                "text": "ئیمەیڵمان بۆ بنێرە بۆ [support@yourdomain.com] بە بابەتی «داواکاری سڕینەوەی هەژمار» لە ئیمەیڵ یان ژمارەی تۆمارکراوی خۆتەوە."
+              }
+            ]
+          },
+          {
+            "heading": "کاتێک هەژمارەکەت دەسڕیتەوە چی ڕوودەدات",
+            "blocks": [
+              {
+                "type": "bullet",
+                "text": "پڕۆفایل، زانیاری پاشەکەوتکراو، و چوونەژوورەوەی ئەپەکەت بە یەکجاری لادەبرێن."
+              },
+              {
+                "type": "bullet",
+                "text": "مێژووی حجزەکانت و هەر زانیارییەک کە بە یاسایی پێویستە بیپارێزین (بۆ نموونە بۆ باج، ڕێگریکردن لە فێڵ، یان تۆماری ناکۆکییەکان) لەوانەیە بۆ ئەو ماوەیە بپارێزرێن کە یاسای عێراق و هەرێمی کوردستان داوای دەکات، پاشان دەسڕدرێنەوە."
+              },
+              {
+                "type": "bullet",
+                "text": "ئەو زانیارییانەی پێشتر بۆ حجزێکی تەواوبوو یان چالاک لەگەڵ دابینکەرێک (کۆمپانیای فڕۆکەوانی، کۆمپانیای ئۆتۆمبێلی بەکرێ، هۆتێل، یان ڕێکخەری گەشت) هاوبەش کراون، بەپێی ڕێساکانی پاراستن و تایبەتمەندی خودی ئەو دابینکەرەن — ناتوانین لە جیاتی ئەوان بیانسڕینەوە."
+              },
+              {
+                "type": "bullet",
+                "text": "سڕینەوە هیچ حجزێکی چالاک یان داهاتوو هەڵناوەشێنێتەوە. تکایە سەرەتا ئەوانە هەڵبوەشێنەوە یان تەواویان بکە، یان پەیوەندی بە پشتگیرییەوە بکە بۆ یارمەتی."
+              }
+            ]
+          },
+          {
+            "heading": "کاتی جێبەجێکردن",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "ئامانجمان ئەوەیە داواکارییەکانی سڕینەوە لە ماوەی [X] ڕۆژی کاردا تەواو بکەین و دوای تەواوبوونی بە ئیمەیڵ پشتڕاستی دەکەینەوە."
+              }
+            ]
+          },
+          {
+            "heading": "پێش ئەوەی داوای سڕینەوە بکەیت",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "سڕینەوەی هەژمارەکەت هەمیشەییە و ناتوانرێت پاشگەز بکرێتەوە. دەستگەیشتنت بە مێژووی حجزەکان، هەڵبژاردنە پاشەکەوتکراوەکان، و هەر باڵانسێکی دڵسۆزی یان قەرز لە ئەپەکەدا لەدەست دەدەیت."
+              }
+            ]
+          }
+        ]
+      },
+      "ar": {
+        "sections": [
+          {
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "يمكنك طلب حذف حسابك في KurdistanGO وبياناتك الشخصية في أي وقت."
+              }
+            ]
+          },
+          {
+            "heading": "كيفية حذف حسابك",
+            "blocks": [
+              {
+                "type": "bullet",
+                "lead": "داخل التطبيق:",
+                "text": "القائمة ← حذف الحساب، أو"
+              },
+              {
+                "type": "bullet",
+                "text": "راسلنا على [support@yourdomain.com] بعنوان «طلب حذف حساب» من بريدك الإلكتروني أو رقم هاتفك المسجَّل."
+              }
+            ]
+          },
+          {
+            "heading": "ماذا يحدث عند حذف حسابك",
+            "blocks": [
+              {
+                "type": "bullet",
+                "text": "تُحذف نهائيًا ملفك الشخصي وبياناتك المحفوظة وبيانات دخولك إلى التطبيق."
+              },
+              {
+                "type": "bullet",
+                "text": "قد يُحتفظ بسجل حجوزاتك وأي بيانات يلزمنا قانونًا الاحتفاظ بها (مثل الضرائب أو منع الاحتيال أو سجلات النزاعات) للمدة التي يقتضيها قانون العراق وإقليم كردستان، ثم تُحذف."
+              },
+              {
+                "type": "bullet",
+                "text": "تخضع البيانات التي سبقت مشاركتها مع مزوّد (شركة طيران أو تأجير سيارات أو فندق أو منظّم جولات) لحجز مكتمل أو نشط لقواعد الاحتفاظ والخصوصية الخاصة بذلك المزوّد — ولا يمكننا حذفها نيابةً عنه."
+              },
+              {
+                "type": "bullet",
+                "text": "الحذف لا يلغي أي حجوزات نشطة أو قادمة. يرجى إلغاؤها أو إتمامها أولًا، أو التواصل مع الدعم للمساعدة."
+              }
+            ]
+          },
+          {
+            "heading": "مدة المعالجة",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "نهدف إلى إتمام طلبات الحذف خلال [X] أيام عمل وسنؤكد ذلك عبر البريد الإلكتروني عند الانتهاء."
+              }
+            ]
+          },
+          {
+            "heading": "قبل أن تطلب الحذف",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "حذف حسابك إجراء دائم ولا يمكن التراجع عنه. وستفقد الوصول إلى سجل حجوزاتك وتفضيلاتك المحفوظة وأي رصيد ولاء أو رصيد دائن في التطبيق."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

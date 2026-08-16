@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --check functions/index.js)",
+      "Bash(dart format *)",
+      "Bash(node --check tool/seed_legal_documents.js)",
+      "Bash(grep -vE \"^\\\\s*$\")"
+    ]
+  }
+}
