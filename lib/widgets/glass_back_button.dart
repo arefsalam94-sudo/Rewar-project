@@ -15,6 +15,7 @@ class GlassBackButton extends StatelessWidget {
     required this.onTap,
     this.dark,
     this.useAppLiquidGlass = false,
+    this.nativeIOS26 = false,
   });
 
   final VoidCallback onTap;
@@ -22,6 +23,7 @@ class GlassBackButton extends StatelessWidget {
   /// Uses the Moonlit glass + a light chevron. Only Login passes true today.
   final bool? dark;
   final bool useAppLiquidGlass;
+  final bool nativeIOS26;
 
   /// The visible circle, unchanged from the approved designs.
   static const double visualSize = 36;
@@ -58,6 +60,7 @@ class GlassBackButton extends StatelessWidget {
                           dark: isDark,
                           quality: AppLiquidGlassQuality.standard,
                           interactive: true,
+                          nativeIOS26: nativeIOS26,
                           child: Center(
                             child: Icon(
                               Icons.chevron_left,

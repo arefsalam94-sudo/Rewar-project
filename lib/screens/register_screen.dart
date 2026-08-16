@@ -425,6 +425,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: GlassBackButton(
                           dark: _darkMode,
                           useAppLiquidGlass: true,
+                          nativeIOS26: true,
                           onTap: () => Navigator.of(context).maybePop(),
                         ),
                       ),
@@ -457,6 +458,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderRadius: 28,
                       dark: _darkMode,
                       quality: AppLiquidGlassQuality.standard,
+                      nativeIOS26: true,
+                      nativeRole: AppLiquidGlassNativeRole.samplingContainer,
                       padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -466,6 +469,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             hint: l10n.fullName,
                             prefixIcon: Icons.person_outline,
                             dark: _darkMode,
+                            nativeIOS26: true,
                             textInputAction: TextInputAction.next,
                             validator: (value) => _validateName(value, l10n),
                           ),
@@ -475,6 +479,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             hint: l10n.age,
                             prefixIcon: Icons.calendar_today_outlined,
                             dark: _darkMode,
+                            nativeIOS26: true,
                             readOnly: true,
                             onTap: _pickDateOfBirth,
                             suffix: Icon(
@@ -488,6 +493,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             hint: l10n.genderOptional,
                             prefixIcon: Icons.person_add_alt,
                             dark: _darkMode,
+                            nativeIOS26: true,
                             readOnly: true,
                             onTap: _pickGender,
                             suffix: Icon(
@@ -501,6 +507,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             hint: l10n.phoneNumber,
                             prefixIcon: Icons.phone_outlined,
                             dark: _darkMode,
+                            nativeIOS26: true,
                             keyboardType: TextInputType.phone,
                             textInputAction: TextInputAction.next,
                             inputFormatters: [
@@ -520,6 +527,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             hint: l10n.emailAddress,
                             prefixIcon: Icons.mail_outline,
                             dark: _darkMode,
+                            nativeIOS26: true,
                             keyboardType: TextInputType.emailAddress,
                             textInputAction: TextInputAction.next,
                             validator: (value) => _validateEmail(value, l10n),
@@ -530,6 +538,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             hint: l10n.password,
                             prefixIcon: Icons.lock_outline,
                             dark: _darkMode,
+                            nativeIOS26: true,
                             obscureText: _obscurePassword,
                             textInputAction: TextInputAction.next,
                             suffix: _EyeToggle(
@@ -548,6 +557,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             hint: l10n.confirmPassword,
                             prefixIcon: Icons.lock_outline,
                             dark: _darkMode,
+                            nativeIOS26: true,
                             obscureText: _obscureConfirm,
                             textInputAction: TextInputAction.done,
                             suffix: _EyeToggle(
@@ -736,6 +746,7 @@ class _GenderSheet extends StatelessWidget {
           borderRadius: 20,
           dark: dark,
           quality: AppLiquidGlassQuality.standard,
+          nativeIOS26: true,
           // Scrollable for the same reason the country sheet is: a modal
           // sheet is capped at 9/16 of the screen, which three options can
           // exceed on a short phone once the system font is enlarged.
@@ -869,6 +880,7 @@ class _CountrySheet extends StatelessWidget {
           borderRadius: 20,
           dark: dark,
           quality: AppLiquidGlassQuality.standard,
+          nativeIOS26: true,
           child: ListView(
             shrinkWrap: true,
             children: [
@@ -947,6 +959,7 @@ class _SocialButton extends StatelessWidget {
       dark: dark,
       quality: AppLiquidGlassQuality.standard,
       interactive: true,
+      nativeIOS26: true,
       child: Material(
         color: Colors.transparent,
         child: InkWell(

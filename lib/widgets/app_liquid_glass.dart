@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import '../theme/app_colors.dart';
+import 'native_apple_liquid_glass.dart';
 
 /// Shapes supported by [AppLiquidGlass].
 enum AppLiquidGlassShape { roundedRectangle, pill, circle }
@@ -11,11 +12,24 @@ enum AppLiquidGlassShape { roundedRectangle, pill, circle }
 /// App-owned quality vocabulary. Package types stay private to this file.
 enum AppLiquidGlassQuality { standard, premium }
 
-/// The single project entry point for shader-rendered liquid glass.
+/// How an opted-in surface participates in the native iOS 26 glass hierarchy.
+enum AppLiquidGlassNativeRole {
+  /// A physical Apple Liquid Glass surface.
+  surface,
+
+  /// A layout/padding wrapper containing child glass surfaces.
+  ///
+  /// On iOS 26 this deliberately has no refractive material, because glass
+  /// cannot sample through another glass surface. Other renderers retain the
+  /// existing visual treatment.
+  samplingContainer,
+}
+
+/// The single project entry point for application liquid glass.
 ///
-/// This deliberately delegates refraction, lensing, rim light, chromatic
-/// aberration and specular lighting to `liquid_glass_widgets`. It contains no
-/// BackdropFilter-based imitation.
+/// Opted-in iOS 26 surfaces use Apple's native UIKit material. Every other
+/// platform and screen delegates refraction, lensing, rim light, chromatic
+/// aberration and specular lighting to `liquid_glass_widgets`.
 class AppLiquidGlass extends StatelessWidget {
   const AppLiquidGlass({
     super.key,
@@ -29,6 +43,8 @@ class AppLiquidGlass extends StatelessWidget {
     this.quality = AppLiquidGlassQuality.standard,
     this.interactive = false,
     this.onTap,
+    this.nativeIOS26 = false,
+    this.nativeRole = AppLiquidGlassNativeRole.surface,
   });
 
   final Widget child;
@@ -41,6 +57,8 @@ class AppLiquidGlass extends StatelessWidget {
   final AppLiquidGlassQuality quality;
   final bool interactive;
   final VoidCallback? onTap;
+  final bool nativeIOS26;
+  final AppLiquidGlassNativeRole nativeRole;
 
   LiquidShape get _liquidShape {
     return switch (shape) {
@@ -109,7 +127,7 @@ class AppLiquidGlass extends StatelessWidget {
       );
     }
 
-    return AdaptiveGlass(
+    final flutterGlass = AdaptiveGlass(
       shape: _liquidShape,
       settings: settings,
       quality: effectiveQuality,
@@ -119,6 +137,28 @@ class AppLiquidGlass extends StatelessWidget {
       isInteractive: interactive || onTap != null,
       glowIntensity: interactive || onTap != null ? 0.18 : 0,
       child: content,
+    );
+
+    if (!nativeIOS26 || !NativeAppleLiquidGlass.canBeRequested) {
+      return flutterGlass;
+    }
+
+    return FutureBuilder<bool>(
+      future: NativeAppleLiquidGlass.availability,
+      builder: (context, snapshot) {
+        if (snapshot.data != true) return flutterGlass;
+        if (nativeRole == AppLiquidGlassNativeRole.samplingContainer) {
+          return content;
+        }
+        return NativeAppleLiquidGlassSurface(
+          shapeName: shape.name,
+          borderRadius: borderRadius,
+          isDark: isDark,
+          interactive: interactive || onTap != null,
+          tint: tint?.withValues(alpha: isDark ? 0.028 : 0.045),
+          child: content,
+        );
+      },
     );
   }
 

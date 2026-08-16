@@ -15,5 +15,32 @@ import UIKit
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+
+    guard let registrar = engineBridge.pluginRegistry.registrar(
+      forPlugin: "AppNativeLiquidGlass"
+    ) else {
+      return
+    }
+
+    registrar.register(
+      NativeLiquidGlassViewFactory(),
+      withId: "kurdistan_paradise/native_liquid_glass_surface"
+    )
+
+    let channel = FlutterMethodChannel(
+      name: "kurdistan_paradise/native_liquid_glass",
+      binaryMessenger: registrar.messenger()
+    )
+    channel.setMethodCallHandler { call, result in
+      guard call.method == "isAvailable" else {
+        result(FlutterMethodNotImplemented)
+        return
+      }
+      if #available(iOS 26.0, *) {
+        result(true)
+      } else {
+        result(false)
+      }
+    }
   }
 }
