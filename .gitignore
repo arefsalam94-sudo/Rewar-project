@@ -61,3 +61,10 @@ functions/.env
 functions/.env.*
 *-service-account.json
 serviceAccountKey.json
+# Firebase's own download naming is `<project>-firebase-adminsdk-<hash>.json`,
+# which `*-service-account.json` above does NOT match — a real gap, found when
+# the first key was actually downloaded. An Admin SDK key bypasses every rule
+# in firestore.rules, so this must not depend on remembering to rename a file.
+*firebase-adminsdk*.json
+# The whole folder, so anything dropped in it is covered whatever it is called.
+secrets/

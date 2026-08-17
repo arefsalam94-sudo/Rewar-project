@@ -55,41 +55,27 @@ Every screen must use a developer-supplied background photograph.
 
 ---
 
-## 3. Liquid-glass optical tokens
+## 3. Liquid-glass theme tint
 
-The optical structure is defined by `DESIGN_SYSTEM.md`. These tokens supply Dark-theme color only.
+The base glass material comes from `DESIGN_SYSTEM.md`.
+
+Dark-specific tint tokens:
 
 | Token | Value |
 |---|---|
 | `glass-tint` | `#0C1F1F` |
-| `glass-tint-opacity` | `0.05` |
-| `glass-rim-highlight` | `#FFFFFF` |
-| `glass-rim-highlight-opacity` | `0.55` |
-| `glass-corner-highlight` | `#FFFFFF` |
-| `glass-corner-highlight-opacity` | `0.26` |
-| `glass-inner-glow` | `#FFFFFF` |
-| `glass-inner-glow-opacity` | `0.08` |
+| `glass-tint-opacity` | `0.06` |
+| `glass-edge` | white/light neutral |
 | `glass-shadow-color` | `#000000` |
-| `glass-shadow-opacity` | `0.12` |
-| `glass-inset-shadow-color` | `#000000` |
-| `glass-inset-shadow-opacity` | `0.18` |
-| `glass-inset-highlight` | `#FFFFFF` |
-| `glass-inset-highlight-opacity` | `0.08` |
+| `glass-shadow-opacity` | `0.14` |
+| `glass-inner-shadow-color` | `#000000` |
+| `glass-inner-shadow-opacity` | `0.14` |
 
-Dark glass must feel **bright, clear, glossy, and polished**, not like a dark translucent panel.
+Do not use the dark emerald background gradient as an opaque card fill.
 
-The emerald tint is environmental color only. Do not use the dark background gradient as the glass body.
+The glass must remain clear enough for the background image to be visible through it.
 
-Refraction/lens strength, blur, sheen geometry, corner lighting, and shadow geometry come from `DESIGN_SYSTEM.md` and must match Light mode structurally.
-
-### Recessed inputs
-
-Dark inputs retain the approved recessed depth:
-
-- use `glass-inset-shadow-color` / `glass-inset-shadow-opacity`
-- preserve a quiet inner highlight
-- do not replace the inset field with an opaque dark cavity
-- focus adds `selection-accent` while the inset depth remains visible
+---
 
 ## 4. Selection and focus
 

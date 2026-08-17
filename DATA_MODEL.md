@@ -537,16 +537,195 @@ place geopoint so the detail card cannot show stale catalog temperatures.
 | pricePerDay | number | |
 
 ## `tours`
+
+**Substantially revised for the Explore Tours screen (Phase 6).** The original
+eight-field draft could not render a single card: the text fields were plain
+strings in a trilingual app, `duration` was a pre-rendered English sentence,
+and there were no dates, no active flag and no way for the admin panel to
+choose what appears in the carousel or the Trending section. Nothing had been
+seeded, so there is no migration — but the admin panel's tour form must match
+this shape.
+
 | field | type | notes |
 |---|---|---|
-| name | string | |
-| duration | string | e.g. "3 days travel" |
-| description | string | |
-| imageUrls | array<string> | |
-| companyTag | string | |
-| features | array<string> | e.g. Camping, Food, Transport |
-| location | geopoint | |
-| pricePerPerson | number | |
+| name | map | keyed by locale `{ en, ku, ar }`. **Changed from a plain string** — the app is trilingual and switching language must not cost a second read, the same rule `nature_spots`, `featured` and `legal_documents` already follow. Missing locale falls back to `en` |
+| description | map | same shape. Shown clipped on the card, in full on the detail screen |
+| locationLabel | map | same shape. The readable place line, e.g. "Rawanduz, Erbil". **New** — a geopoint cannot be shown to a user and a label cannot be measured against, so the collection needs both |
+| companyTag | string | the operator badge in the card's corner, e.g. `"AB group"`. Deliberately **not** a locale map: it is a company's own name, and translating a brand is wrong in the same way translating "Booking.com" would be |
+| durationDays | number | **Replaces `duration: "3 days travel"`.** A stored sentence would make the Kurdish and Arabic cards read English; the app builds the line in all three languages from this number |
+| features | array<string> | what the tour includes, as the ids in `lib/models/tour.dart` (`TourFeature`): `camping`, `hiking`, `guide`, `food`, `swimming`, `campfire`, `transport`, `photography`. The list card draws the **first four** and drops any id the app has no icon for, so a new tag here needs a matching enum value in the app |
+| imageUrls | array<string> | Storage download URLs. The first is the list-card thumbnail; the carousel shows them all for a highlighted tour |
+| location | geopoint | the meeting point, used to compute the live distance; never displayed directly |
+| pricePerPerson | number | **Optional.** Absent hides the price box rather than drawing a zero — a tour whose price is not set yet is not free |
+| currency | string | `"USD"` \| `"IQD"` \| `"EUR"`, matching `AppCurrency` and `bookings.currency`. **New.** The price the operator quoted, and **the currency a charge must be settled in** — see `currency_rates` below for why display conversion is a separate, explicitly approximate thing |
+| reviewScore | number | 0–10, Booking.com-style. **Added in the gap-closing pass.** The 5-star row is derived (`round(score / 2)`), never stored. Optional: absent hides the badge rather than drawing a zero. **Server-owned** — see below |
+| ratingCount | number | how many reviews `reviewScore` averages — an 8.7 from one review is not an 8.7 from two hundred, which is why the card prints both. **Server-owned** |
+| ratingBreakdown | map | `{ "1": n … "5": n }`, the 5★→1★ distribution. **Server-owned.** Not drawn on the list card; it is what a Tour Reviews screen would use |
+| capacity | number | **Optional.** How many travellers the departure takes. Absent means the operator published none, and the availability line is simply not drawn rather than guessed at |
+| bookedCount | number | how many places are taken. **Server-owned** — see the availability note below |
+| cancellationPolicy | string | one of `free_24h`, `free_48h`, `free_7d`, `non_refundable` — a **tier**, not free text. The wording lives in `legal_documents/cancellation_refunds`; a per-tour paragraph would drift from the policy the app actually enforces |
+| guideLanguages | array&lt;string&gt; | ISO 639-1 codes the guide speaks: `en`, `ku`, `ar`, `tr`, `fa`. A closed set, so the filter chips and the card label can be localized |
+| transportAvailable | boolean | whether this departure offers the optional bus add-on. Operator/admin controlled; false hides/disables the checkout option |
+| transportPricePerPerson | number | optional bus add-on price for one traveller, quoted in the tour's `currency`. Required by the UI when `transportAvailable == true`; absent never means free |
+| startAt | timestamp | **New.** Departure. Drives the list ordering *and* the date filter |
+| endAt | timestamp | **New.** Return. Optional — a one-day tour may omit it, and the card then prints a single date instead of "Aug 14 - Aug 14" |
+| trending | boolean | **New.** True puts the tour in the screen's "Trending Tours" section, which is otherwise just the catalog |
+| trendingOrder | number | **New.** Ascending order within that section |
+| highlighted | boolean | **New.** True puts the tour in the screen's top carousel |
+| highlightOrder | number | **New.** Ascending order within that carousel |
+| active | boolean | **New.** False pulls a tour off the list without deleting it — same flag, same purpose as `featured.active` and `nature_spots.active` |
+
+### The three rating aggregates are server-owned — the admin panel must not edit them
+
+`reviewScore`, `ratingCount` and `ratingBreakdown` are not values anyone types.
+The `syncTourReviewAggregates` Cloud Function (`functions/index.js`) recomputes
+all three from the `reviews` subcollection whenever a review is written — the
+same arrangement `nature_spots` uses, copied deliberately rather than
+reinvented so the two catalogs cannot end up with different guarantees.
+
+Why the server has to own it: `tours` is **admin-only write**
+(`SECURITY.md` 1), and must stay that way — a client that could write the
+average score of a tour could give a competing operator a 2.0 without leaving
+a review. Why it **recomputes** rather than increments: triggers are
+at-least-once, so a duplicate delivery is a documented guarantee; an
+`increment(1)` applied twice corrupts the count permanently, while a recompute
+applied twice gives the same answer and repairs earlier drift.
+
+**Consequences for the admin panel:** show all three **read-only**.
+
+### `tours/{tourId}/reviews/{reviewId}`
+
+Traveller feedback, and the only thing the aggregates above are derived from.
+Same shape and the same rules as `nature_spots/{spotId}/reviews` — **the
+document id is the author's uid**, which is what makes "one review per person
+per tour" enforceable rather than merely intended.
+
+| field | type | notes |
+|---|---|---|
+| userId | string | immutable owner UID; equals the document id |
+| userName | string | denormalized display name, max 80 characters. Copied, not joined — a review must keep showing who wrote it after that account is renamed |
+| avatarUrl | string | optional, presentation-only |
+| rating | number | **0.5–5.0 in half-star steps.** Shown as `rating × 2` out of 10. Rules reject anything off the half-step grid |
+| comment | string | 3–1000 characters |
+| status | string | `published`; retained for moderation visibility |
+| createdAt / updatedAt | timestamp | `createdAt` is pinned by the rules on update, so an author cannot re-date an old review |
+| helpfulCount | number | **Server-owned.** Counted from the tour review's `votes` subcollection by `syncTourReviewHelpfulCount`; never accepted from the client |
+
+**No new index was needed.** The `reviews` composite indexes in
+`firestore.indexes.json` are `COLLECTION_GROUP`-scoped and keyed on the
+collection **id**, so they already serve `tours/*/reviews`.
+
+### `tours/{tourId}/reviews/{reviewId}/votes/{voterId}`
+
+Same shape and guarantees as nature-review votes. The document id is the
+voter's uid, contains only `userId` and `createdAt`, and can be read only by
+that voter by known id; listing voters is denied. The
+`syncTourReviewHelpfulCount` trigger counts these documents into the
+server-owned `helpfulCount` on the parent review.
+
+### Availability is a server-owned number, and a transaction, not a field
+
+`bookedCount` must be maintained by the tour checkout Cloud Function, never by
+a client — a client that could write it could mark a rival's departure full,
+or clear it and oversell one.
+
+**Nothing in this app can create a tour booking yet** (the detail/checkout
+screen is Phase 6b), so the seeded values are the only writer today. When that
+screen is built, its Cloud Function must, **inside one transaction**:
+
+1. re-read `capacity` and `bookedCount`, and refuse the booking if
+   `capacity - bookedCount < party size` — checking availability on the client
+   is not a check, it is a suggestion;
+2. write the booking and bump `bookedCount` together, so two people paying at
+   once cannot both take the last seat.
+
+A trigger on `bookings` is not sufficient on its own: by the time it fires the
+payment has been taken, and an oversold departure has to be refunded and
+apologised for. This is also recorded in `functions/index.js`, in the file that
+would own it.
+
+Only two queries are ever run, both with a composite index declared in
+`firestore.indexes.json`:
+
+```
+carousel:  .where('active', == true).where('highlighted', == true)
+             .orderBy('highlightOrder').limit(8)
+catalog:   .where('active', == true)
+             .orderBy('startAt').limit(200)
+```
+
+### Why the search box is not a query
+
+The screen's search field matches a tour **name, location line or operator**,
+and Firestore cannot do that at all: it has no substring match, and
+`name` is a locale map, so a server-side search would have to pick one of three
+languages and fail the other two. The date picker and the trending ordering are
+then applied over the same in-memory catalog, so neither costs an extra read or
+an extra index.
+
+**One read serves the carousel, the list, the search, the date filter and the
+Trending ordering**, and changing a filter costs nothing.
+
+> **When this stops being right.** The catalog is capped at
+> `ToursService.catalogFetchLimit` (200 documents), which is both the read cost
+> and the ceiling on what search can find. Comfortable for a regional operator
+> catalog. Past that, the search belongs in a real search service (Algolia,
+> Typesense) or a tokenized `keywords` array — not in a bigger download.
+
+**Prices are a security boundary, not just content.** `pricePerPerson` and
+`currency` are what a future checkout charges against, so `tours` stays
+admin-only write (`firestore.rules`); a client that could write here could set
+its own price to zero before booking. See `SECURITY.md` section 5.
+
+### Sorting and refining still cost no extra read or index
+
+The gap-closing pass added a sort control (soonest / price ↑ / price ↓ / top
+rated / nearest), feature chips, guide-language chips, a date **range** and a
+party-size filter. All of them run over the one catalog read already in memory
+(`TourFilters.sortedFrom`), so the collection still needs exactly the two
+indexes listed above.
+
+Two behaviours worth recording because they are decisions, not accidents:
+
+- **Items missing a sort key sort last, never first.** A tour with no price is
+  not the cheapest and not the most expensive; an unrated tour is not the worst
+  rated.
+- **"Nearest to me" falls back to "Soonest" when there is no GPS fix**, and the
+  option is not offered at all — presenting an arbitrary order as "nearest" is
+  worse than offering one option fewer.
+
+## `currency_rates` *(added for the Explore Tours screen)*
+
+One document, `currency_rates/latest`. **Public read, admin/server write.**
+
+| field | type | notes |
+|---|---|---|
+| base | string | the currency every rate is quoted against, e.g. `"USD"`. Present in `rates` at `1`, so the cross-rate arithmetic needs no special case |
+| rates | map | `{ "USD": 1, "IQD": 1310, "EUR": 0.92 }` — units of each currency per one `base` unit |
+| updatedAt | timestamp | shown to the user as part of the disclosure. **An undated rate is worse than no rate** |
+
+A fixed document id rather than a query: one read, no index, and no way for a
+stale document to win a race with a fresh one.
+
+**These rates are indicative, not transactional.** They exist so a traveller
+can compare a tour priced in USD against one priced in IQD. A charge must be
+priced in the operator's own currency and converted by the payment processor,
+or the app takes on FX risk it cannot hedge (`SECURITY.md` 5). Every converted
+figure in the UI is prefixed `≈` and carries a one-line disclosure above the
+list — drawn **only when something on screen was actually converted**, because
+a standing notice nobody needs is what makes real disclosures invisible.
+
+Write access is a **financial** control, not an editorial one: a client that
+could write this document could make a $500 tour read as $5.
+
+`CurrencyRates.convert` returns **null** for any currency missing from the
+table, and the UI then falls back to the operator's own price. Deleting a
+currency here is therefore safe; adding a wrong one is not.
+
+> ⚠️ **Nothing refreshes this document yet**, and rates drift. Before release
+> it needs either a scheduled Cloud Function pulling from a rate provider (key
+> in Secret Manager, never in the repo) or an admin-panel form. Recorded in
+> `tool/seed_currency_rates.js` as well.
 
 ## `flights`
 | field | type | notes |

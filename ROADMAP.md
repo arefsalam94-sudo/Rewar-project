@@ -112,8 +112,52 @@ Order matters here — build and approve in this exact sequence:
 - [ ] Car booking/options screen
 
 ## Phase 6 — Explore Tours
-- [ ] Explore Tours screen (reads from Firestore `tours`)
-- [ ] Tour detail/booking screen
+
+> **Built out of order, deliberately.** Phases 4 and 5 (Where to Stay, Car
+> Rental) are still NOT STARTED; this screen was requested directly with its
+> reference and full functional description. Recorded here so the sequence is
+> an explicit decision rather than a lost step.
+
+- [ ] Explore Tours screen (reads from Firestore `tours`) — IN PROGRESS. Built
+      from the supplied reference: the back button and title on one row, a
+      carousel of highlighted tours, a search field, a date field and an Apply
+      button, then a "Trending Tours" card per tour with its operator tag, trip
+      length, four stroke-only feature icons, location, live distance, dates
+      and price per person. Light + dark, all three languages. The `tours`
+      schema was substantially revised to make the card renderable (see
+      `DATA_MODEL.md`). Awaiting review/approval; still needs the tour
+      photographs, a live Firebase project, the seeded documents confirmed
+      rendering and the rules denial-tested.
+      **Gap-closing pass (2026-08-17):** ten of the twelve items from the
+      Agoda/Booking.com review were built — ratings + review counts (server
+      derived, leading edge on the carousel, trailing edge on a card),
+      availability, cancellation tier, sort control, feature and
+      guide-language refinement chips, date **ranges**, a traveller-count
+      selector, currency conversion with disclosure, the favourite heart, and
+      the guide-language field.
+- [ ] Tour detail/booking screen — IN PROGRESS. Tour cards and highlighted
+      slides now open a detail page with an outside-image back button, large
+      gallery, information and facilities cards, live weather, map, tour-only
+      reviews, traveller/bus estimate and a fixed Reserve Insight CTA. The CTA
+      is intentionally disabled until the requested payment/booking behavior
+      is supplied; no booking is created client-side.
+      Two things are **release blockers** that belong here, both recorded in
+      `DATA_MODEL.md` and `functions/index.js`: the checkout Cloud Function
+      must re-check `capacity - bookedCount` and bump it **in one
+      transaction** (a client-side availability check is a suggestion, not a
+      check), and the charge must be priced in the operator's own currency —
+      never at the indicative rate this app stores.
+- [ ] Tour Reviews screen — NOT STARTED. The `tours/{id}/reviews`
+      subcollection, its rules and its aggregate trigger all exist and are
+      seeded, so the numbers on the cards are real; there is simply no screen
+      to read or write them from yet. `helpfulCount` and the `votes`
+      subcollection were deliberately **not** added, since nothing can cast a
+      vote.
+- [ ] Currency-rate refresh job — NOT STARTED, **release blocker for converted
+      prices.** `currency_rates/latest` is seeded but nothing refreshes it, and
+      a stale rate is the failure mode to design against. Needs a scheduled
+      Cloud Function against a rate provider (key in Secret Manager) or an
+      admin-panel form.
 
 ## Phase 7 — Flight Ticketing
 - [ ] Flight Ticketing search screen

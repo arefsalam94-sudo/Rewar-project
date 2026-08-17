@@ -15,6 +15,7 @@ import '../widgets/home_background.dart';
 import '../widgets/home_bottom_nav.dart';
 import '../widgets/home_drawer.dart';
 import 'explore_nature_screen.dart';
+import 'explore_tours_screen.dart';
 import 'login_screen.dart';
 import 'map_screen.dart';
 
@@ -312,6 +313,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> _openExploreTours() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const ExploreToursScreen()),
+    );
+  }
+
   Future<void> _onNavSelected(HomeNavTab tab) async {
     final l10n = AppLocalizations.of(context);
     switch (tab) {
@@ -567,7 +574,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   imageAsset: 'assets/images/journey-tours.png',
                   contentOffsetY: 18,
                   buttonOffsetY: 10,
-                  onTap: () => _snack(l10n.comingSoon),
+                  onTap: _openExploreTours,
                 ),
               ),
             ],

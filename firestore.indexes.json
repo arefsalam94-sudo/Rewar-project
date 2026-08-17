@@ -1,7 +1,7 @@
 {
   "indexes": [
     {
-      "//": "Nature detail + Reviews & Ratings: published reviews, newest first. This is the default sort on the reviews page and the two-review preview on the detail page.",
+      "//": "Published reviews, newest first. Default sort on the Reviews & Ratings page and the two-review preview on the nature detail page. A COLLECTION_GROUP index keyed on the `reviews` collection id, so it serves tours/*/reviews as well as nature_spots/*/reviews — Firestore indexes by collection id, not by path, so the tour ratings added in Phase 6 needed no new index at all.",
       "collectionGroup": "reviews",
       "queryScope": "COLLECTION",
       "fields": [
@@ -65,6 +65,25 @@
       "fields": [
         { "fieldPath": "active", "order": "ASCENDING" },
         { "fieldPath": "reviewScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "//": "Explore Tours carousel: tours.where('active', ==, true).where('highlighted', ==, true).orderBy('highlightOrder').",
+      "collectionGroup": "tours",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "active", "order": "ASCENDING" },
+        { "fieldPath": "highlighted", "order": "ASCENDING" },
+        { "fieldPath": "highlightOrder", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "//": "Explore Tours list: tours.where('active', ==, true).orderBy('startAt'). This is the ONLY list query. The search box cannot be a query at all — Firestore has no substring match, and the tour name is a locale map, so a server-side search would have to pick one of three languages. The date filter and the trending ordering are applied in Dart over the same read, so neither needs an index of its own.",
+      "collectionGroup": "tours",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "active", "order": "ASCENDING" },
+        { "fieldPath": "startAt", "order": "ASCENDING" }
       ]
     },
     {

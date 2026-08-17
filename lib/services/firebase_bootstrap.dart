@@ -1,13 +1,24 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
+import '../firebase_options.dart';
+
 /// Initializes Firebase once at startup, without letting a missing/incomplete
 /// Firebase configuration crash the whole app.
 ///
-/// Until the Firebase project is created and `google-services.json` /
-/// `GoogleService-Info.plist` are added (see `FIREBASE_SETUP.md`),
-/// [initializeApp] throws. We catch that, record it in [isReady], and let the
-/// app keep running so the UI is still viewable — every screen that needs the
+/// Configured against the `rewar-app-1c10e` project, whose options are
+/// generated into `lib/firebase_options.dart` by `flutterfire configure`.
+///
+/// **Options are passed explicitly** rather than relying on the bare
+/// `initializeApp()`, which reads the platform config files
+/// (`google-services.json` / `GoogleService-Info.plist`) through native
+/// plugins. Explicit options behave identically on every platform including
+/// web and desktop, and they fail loudly at compile time if the generated file
+/// is missing — rather than at runtime, on one platform, in a way that looks
+/// like a network error.
+///
+/// If initialization still fails, we catch it, record it in [isReady], and let
+/// the app keep running so the UI is viewable — every screen that needs the
 /// backend checks [isReady] and shows a real error instead of pretending.
 class FirebaseBootstrap {
   FirebaseBootstrap._();
@@ -24,7 +35,9 @@ class FirebaseBootstrap {
   static Future<void> ensureInitialized() async {
     if (_ready) return;
     try {
-      await Firebase.initializeApp();
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
       _ready = true;
       _error = null;
     } catch (e, s) {

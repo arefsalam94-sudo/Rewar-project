@@ -217,7 +217,6 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                             Align(
                               child: ThemeModeToggle(
                                 isDark: isDark,
-                                nativeIOS26: true,
                                 onChanged: ThemePreference.setDarkMode,
                               ),
                             ),
@@ -264,7 +263,6 @@ class _LanguageButton extends StatelessWidget {
       selected: selected,
       quality: AppLiquidGlassQuality.standard,
       interactive: true,
-      nativeIOS26: true,
       child: Material(
         color: Colors.transparent,
         child: InkWell(

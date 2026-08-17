@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "5280763166",
+    "project_id": "rewar-app-1c10e",
+    "storage_bucket": "rewar-app-1c10e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:5280763166:android:f745644c27a7ecd9f14d0f",
+        "android_client_info": {
+          "package_name": "com.kurdistanparadise.kurdistan_paradise_travel_guide"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPpx9hPpdQWhjcjxlmw99mAx53in9rwMY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

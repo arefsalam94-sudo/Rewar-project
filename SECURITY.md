@@ -118,11 +118,12 @@ different risk from `bookings` or `favorites`.
   inside the range but is a value no UI in this app can produce, so accepting
   it means accepting something that only came from a hand-rolled client.
 - **The aggregates are not writable, at all.** `reviewScore`, `ratingCount` and
-  `ratingBreakdown` live on `nature_spots`, which stays admin-only write, and
-  are derived by a Cloud Function. A client that could write a place's average
+  `ratingBreakdown` live on `nature_spots` or `tours`, which stay admin-only
+  write, and are derived by a Cloud Function. A client that could write an average
   score could give a competitor a 2.0 without ever leaving a review.
-- **`helpfulCount` is server-owned** and is on no client allow-list. The client
-  writes `reviews/{id}/votes/{uid}` — a document keyed by the voter, which
+- **`helpfulCount` is server-owned** and is on no client allow-list. For both
+  nature and tour reviews, the client writes `reviews/{id}/votes/{uid}` — a
+  document keyed by the voter, which
   cannot be created twice by the same person — and a trigger counts them. An
   incrementable counter can be sent in a loop; a document cannot.
 - **`list` on `votes` is denied.** Nobody needs to enumerate who liked a
@@ -143,7 +144,8 @@ to both the author and an admin.
 
 **Verify by trying to break it**, not by checking the UI hides the button:
 
-1. Signed out: `create` on `nature_spots/{id}/reviews/{anything}` → denied.
+1. Signed out: `create` on `nature_spots/{id}/reviews/{anything}` and
+   `tours/{id}/reviews/{anything}` → denied.
 2. Signed in as A: `create` at `reviews/{B's uid}` → denied.
 3. Signed in as A: `create` at `reviews/{A's uid}` with `rating: 3.7` → denied.
    With `rating: 6`, `rating: 0` → denied.
@@ -151,7 +153,8 @@ to both the author and an admin.
    denied. Setting `createdAt` to now → denied.
 5. Signed in as A: `create` at `reviews/{A}/votes/{B}` → denied.
 6. Signed in as A: `list` on `reviews/{any}/votes` → denied.
-7. Any client: `update` on `nature_spots/{id}` setting `reviewScore` → denied.
+7. Any client: `update` on `nature_spots/{id}` or `tours/{id}` setting
+   `reviewScore` → denied.
 
 > Not yet run — there is no live Firebase project. This is a release blocker
 > for the screen, not an optional step.

@@ -32,11 +32,17 @@ class NatureReviewsScreen extends StatefulWidget {
     required this.spot,
     this.natureSpotsService,
     this.userProfileService,
+    this.isTourReview = false,
+    this.backgroundFallbackAsset = exploreNatureBackgroundAsset,
+    this.useSubjectPhotoForBackground = true,
   });
 
   final NatureSpot spot;
   final NatureSpotsService? natureSpotsService;
   final UserProfileService? userProfileService;
+  final bool isTourReview;
+  final String backgroundFallbackAsset;
+  final bool useSubjectPhotoForBackground;
 
   @override
   State<NatureReviewsScreen> createState() => _NatureReviewsScreenState();
@@ -200,13 +206,14 @@ class _NatureReviewsScreenState extends State<NatureReviewsScreen> {
     // below if the write fails, so the UI never keeps a vote the server
     // rejected.
     setState(() {
-      _reviews = [..._reviews]..[index] = review.copyWith(
-        viewerFoundHelpful: wanted,
-        helpfulCount: (review.helpfulCount + (wanted ? 1 : -1)).clamp(
-          0,
-          1 << 30,
-        ),
-      );
+      _reviews = [..._reviews]
+        ..[index] = review.copyWith(
+          viewerFoundHelpful: wanted,
+          helpfulCount: (review.helpfulCount + (wanted ? 1 : -1)).clamp(
+            0,
+            1 << 30,
+          ),
+        );
     });
 
     try {
@@ -228,7 +235,9 @@ class _NatureReviewsScreenState extends State<NatureReviewsScreen> {
   Future<void> _submit() async {
     final l10n = AppLocalizations.of(context);
     if (!_service.isSignedIn) {
-      _showSignInSheet(l10n.reviewSignInBody);
+      _showSignInSheet(
+        widget.isTourReview ? l10n.tourReviewSignInBody : l10n.reviewSignInBody,
+      );
       return;
     }
     final text = _comment.text.trim();
@@ -305,10 +314,16 @@ class _NatureReviewsScreenState extends State<NatureReviewsScreen> {
     final bottomInset = MediaQuery.paddingOf(context).bottom;
 
     final photos = _spot.photos;
-    final background = _spot.photosAreAssets && photos.isNotEmpty
+    final background =
+        widget.useSubjectPhotoForBackground &&
+            _spot.photosAreAssets &&
+            photos.isNotEmpty
         ? photos.first
-        : exploreNatureBackgroundAsset;
-    final backgroundUrl = !_spot.photosAreAssets && photos.isNotEmpty
+        : widget.backgroundFallbackAsset;
+    final backgroundUrl =
+        widget.useSubjectPhotoForBackground &&
+            !_spot.photosAreAssets &&
+            photos.isNotEmpty
         ? photos.first
         : null;
 
@@ -428,9 +443,7 @@ class _NatureReviewsScreenState extends State<NatureReviewsScreen> {
             end: 16,
             child: Row(
               children: [
-                GlassBackButton(
-                  onTap: () => Navigator.of(context).maybePop(),
-                ),
+                GlassBackButton(onTap: () => Navigator.of(context).maybePop()),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -532,7 +545,7 @@ class _NatureReviewsScreenState extends State<NatureReviewsScreen> {
         padding: const EdgeInsets.all(28),
         child: Center(
           child: Text(
-            l10n.noReviewsYet,
+            widget.isTourReview ? l10n.tourNoReviewsYet : l10n.noReviewsYet,
             textAlign: TextAlign.center,
             style: TextStyle(color: AppColors.secondaryText(context)),
           ),
@@ -616,7 +629,9 @@ class _NatureReviewsScreenState extends State<NatureReviewsScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    l10n.reviewSignInBody,
+                    widget.isTourReview
+                        ? l10n.tourReviewSignInBody
+                        : l10n.reviewSignInBody,
                     style: TextStyle(color: AppColors.secondaryText(context)),
                   ),
                 ),
@@ -680,7 +695,10 @@ class _NatureReviewsScreenState extends State<NatureReviewsScreen> {
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [Flexible(child: label), score],
+                      children: [
+                        Flexible(child: label),
+                        score,
+                      ],
                     ),
                     const SizedBox(height: 6),
                     input,
@@ -812,11 +830,7 @@ class _AverageCard extends StatelessWidget {
           if (constraints.maxWidth < 320) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                summary,
-                const SizedBox(height: 16),
-                bars,
-              ],
+              children: [summary, const SizedBox(height: 16), bars],
             );
           }
           return IntrinsicHeight(

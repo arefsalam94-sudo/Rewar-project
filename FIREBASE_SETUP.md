@@ -29,15 +29,41 @@ Check items off here as you go.
 
 ---
 
-## 1. Install the CLIs (one-time, on this machine)
+## 1. Install the CLIs (one-time, on this machine) — ✅ DONE 2026-08-17
 
-Neither is installed yet — verified. Node 20+ is already present (v24.18.0).
+All four are installed and verified working:
+
+| Tool | Version | Location |
+|---|---|---|
+| Node.js | v24.19.0 (LTS) | `%LOCALAPPDATA%\Programs\node-v24.19.0-win-x64` |
+| npm | 11.17.0 | same |
+| Firebase CLI | 15.27.0 | global npm |
+| FlutterFire CLI | 1.4.1 | `%LOCALAPPDATA%\Pub\Cache\bin` |
+
+Installed from the **official portable zip**, not the MSI: this account is not
+a local administrator, and the MSI needs elevation. Extracted to
+`%LOCALAPPDATA%\Programs` and added to the **user** `Path` — no admin was
+needed and nothing machine-wide was touched.
+
+> ⚠️ The `Path` edit is permanent, but an **already-open terminal will not see
+> it**. Open a new terminal if `node` is "not recognized".
+
+`functions/npm install` has also been run (189 packages); `firebase-admin` and
+`firebase-functions` both load. All seven scripts in `tool/` and
+`functions/index.js` now pass `node --check` — previously unverifiable.
+
+> `functions/package.json` pins the deploy runtime to **Node 20**, which is
+> correct and should stay: it is the Cloud Functions runtime, not the local
+> one. Node 24 locally is only used to run the CLI and the seed scripts.
+
+**What is still not done, and cannot be done for you:**
 
 ```bash
-npm install -g firebase-tools
-dart pub global activate flutterfire_cli
-firebase login
+firebase login    # opens a browser; needs YOUR Google account
 ```
+
+That sign-in, creating the project, choosing the billing plan, and downloading
+a service-account key all require console access under your own account.
 
 ## 2. Create the Firebase project
 

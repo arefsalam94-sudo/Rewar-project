@@ -198,8 +198,6 @@ class _LoginScreenState extends State<LoginScreen> {
       borderRadius: 28,
       dark: _darkMode,
       quality: AppLiquidGlassQuality.premium,
-      nativeIOS26: true,
-      nativeRole: AppLiquidGlassNativeRole.samplingContainer,
       padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
       child: Form(
         key: _formKey,
@@ -231,7 +229,6 @@ class _LoginScreenState extends State<LoginScreen> {
               hint: l10n.email,
               keyboardType: TextInputType.emailAddress,
               dark: _darkMode,
-              nativeIOS26: true,
               validator: (value) {
                 final text = value?.trim() ?? '';
                 if (text.isEmpty) return l10n.emailRequired;
@@ -256,7 +253,6 @@ class _LoginScreenState extends State<LoginScreen> {
               hint: l10n.password,
               obscureText: _obscurePassword,
               dark: _darkMode,
-              nativeIOS26: true,
               suffix: IconButton(
                 icon: Icon(
                   _obscurePassword
@@ -369,7 +365,6 @@ class _TopBar extends StatelessWidget {
               onTap: onBack,
               dark: dark,
               useAppLiquidGlass: true,
-              nativeIOS26: true,
             ),
           ),
           Align(
@@ -416,7 +411,6 @@ class _SocialButton extends StatelessWidget {
       dark: dark,
       quality: AppLiquidGlassQuality.standard,
       interactive: true,
-      nativeIOS26: true,
       child: Material(
         color: Colors.transparent,
         child: InkWell(

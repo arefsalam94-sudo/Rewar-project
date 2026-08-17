@@ -19,7 +19,9 @@ don't mark it seeded until it's really there and confirmed rendering.
 | hotels/{id}/rooms | Ocean View Suite | NOT SEEDED |
 | hotels/{id}/reviews | Sarah — "The views are incredible! Highly recommend." | NOT SEEDED |
 | cars | Tesla Model 3 (GreenWheels Rentals) | NOT SEEDED |
-| tours | Moraine Lake (Alberta, Canada, 3 days travel) | NOT SEEDED |
+| tours | Gali Alibag Waterfall (highlighted + trending), Gali Sherana (trending), Korek Mountain Day Trip (highlighted) — seed with `node tool/seed_explore_tours.js` | NOT SEEDED (needs a Firebase project) |
+| tours/{id}/reviews | 5 traveller reviews — 3 for Gali Alibag, 2 for Gali Sherana, **none for Korek on purpose**. Same script | NOT SEEDED (needs a Firebase project **and** deployed functions) |
+| currency_rates | `latest` — USD base, IQD and EUR — seed with `node tool/seed_currency_rates.js` | NOT SEEDED (needs a Firebase project) |
 | flights | Astra Airlines, Erbil (EBL) → Istanbul | NOT SEEDED |
 | users | (your own test account, created via the Auth screen) | NOT SEEDED |
 | bookings | one per type — hotel, flight, car, tour (upcoming + completed) — seed with `node tool/seed_bookings.js <uid>` | NOT SEEDED (needs a Firebase project) |
@@ -116,6 +118,95 @@ disagrees with them is a bug in the fixture, not a display quirk.
 > the admin panel) — with no URL the card falls back to a brand-coloured panel
 > with a park icon instead of a photo. The page is not "done" until at least
 > one place renders with its real image on a running device.
+
+### tours (Explore Tours screen)
+
+The three tours drawn in the Explore Tours reference — Gali Alibag Waterfall
+(flagged both `highlighted`, so it fills the top carousel, and `trending`, so
+it leads the list), Gali Sherana (`trending`) and Korek Mountain Day Trip
+(`highlighted` only, so the carousel has a second slide):
+
+```
+GOOGLE_APPLICATION_CREDENTIALS=/path/to/key.json \
+  node tool/seed_explore_tours.js
+```
+
+The same three are duplicated as `ToursService.bundledTours()` in
+`lib/services/tours_service.dart`, which is what preview mode serves before
+Firebase exists — **keep the two in sync**, the same rule as the bundled nature
+spots and the bundled featured slides.
+
+Three things about these documents are easy to get wrong:
+
+- **`durationDays` is a number, not "2 Days travel".** The app builds that line
+  in all three languages; a stored English sentence would print English on a
+  Kurdish card.
+- **`features` uses the ids in `lib/models/tour.dart`** — `camping`, `hiking`,
+  `guide`, `food`, `swimming`, `campfire`, `transport`, `photography`. An id
+  the app has no icon for is silently dropped from the card, so a typo shows up
+  as a missing icon rather than an error. The list card draws the **first
+  four**.
+- **`companyTag` is not translated.** It is the operator's own brand name.
+
+> ⚠️ **`startAt` / `endAt` are written relative to the day the script runs**,
+> not as fixed calendar dates — a seeded catalog full of tours that departed
+> last year makes the date filter untestable and the list dishonest. Re-run the
+> script whenever the seeded dates fall into the past.
+
+> ⚠️ Every seeded document has an **empty `imageUrls`** array. Upload the
+> photos to Firebase Storage and paste the download URLs in (or set them from
+> the admin panel) — with no URL the card falls back to a brand-coloured panel
+> with a tour icon instead of a photo. The page is not "done" until at least
+> one tour renders with its real image on a running device.
+
+**Reviews are seeded by the same script**, five of them: three for Gali Alibag
+and two for Gali Sherana. **Korek is left with none deliberately**, so the "No
+reviews yet" state on a real card can be checked against live data rather than
+only in a unit test.
+
+Two things about them are easy to get wrong, both identical to the nature
+reviews:
+
+- **The document id is the author's uid**, which `firestore.rules` requires
+  (one review per person per tour). The `seed-*` ids stand in for real Auth
+  uids; replace them, or delete these documents, once real accounts exist.
+- **`rating` is a half-step number**, 0.5–5, not an integer.
+
+> ⚠️ **The script writes no `reviewScore`, `ratingCount` or `ratingBreakdown`,
+> deliberately.** All three are server-owned and derived by the
+> `syncTourReviewAggregates` Cloud Function from the reviews above. Deploy the
+> functions (`firebase deploy --only functions`) before or with the seed; until
+> that trigger runs **every tour shows no score at all** — the honest state for
+> a catalog whose reviews have not been counted, and the failure to expect
+> rather than a bug in the screen.
+
+> ⚠️ **`bookedCount` is server-owned too.** The seeded values exist only so the
+> availability line is reviewable. Once the tour checkout is built, its Cloud
+> Function owns the field — see the note in `functions/index.js`.
+
+The aggregates the seeded reviews imply are mirrored on
+`ToursService.bundledTours()` (Alibag 8.7 from 3, Sherana 8.5 from 2, Korek
+none). **Keep them in sync** — the bundled numbers exist to match what the
+Cloud Function would compute, so a preview that disagrees is a bug in the
+fixture, not a display quirk.
+
+### currency_rates (converted prices)
+
+One document, `currency_rates/latest`:
+
+```
+GOOGLE_APPLICATION_CREDENTIALS=/path/to/key.json \
+  node tool/seed_currency_rates.js
+```
+
+Mirrored by `CurrencyRatesService.bundledRates`. **Keep the two in sync.**
+
+> ⚠️ **These rates are indicative, not transactional**, and **nothing refreshes
+> them yet.** They let a traveller compare a USD tour against an IQD one; a
+> charge must be settled in the operator's own currency by the payment
+> processor. Before release this needs a scheduled Cloud Function against a
+> rate provider (key in Secret Manager, never in the repo) or an admin-panel
+> form. See the header of the seed script.
 
 ### legal_documents — all seven, one script
 
@@ -241,14 +332,33 @@ pricePerDay: 58
 ```
 
 ### tours
+Seeded by `tool/seed_explore_tours.js` — this is the shape the admin panel's
+tour form must produce. Note the locale maps, the numeric `durationDays` and
+the snake_case feature ids.
 ```
-name: Moraine Lake
-duration: 3 days travel
-description: A glacier-fed alpine lake surrounded by towering peaks, with
-  guided hikes along the shoreline and prime photography stops.
-companyTag: AB Travels
-features: [Camping, Transport, Hiking, Guide]
-pricePerPerson: 50
+name:          { en: "Gali Alibag Waterfall", ku: "ئاوشاری گەلی عەلی بەگ", ar: "شلال كلي علي بك" }
+locationLabel: { en: "Rawanduz, Erbil", ku: "ڕەواندز، هەولێر", ar: "راوندوز، أربيل" }
+description:   { en: "A popular scenic waterfall destination with cool water, picnic spots, and beautiful mountain views.", ku: "...", ar: "..." }
+companyTag: AB group        # a brand name — NOT translated
+durationDays: 2             # a NUMBER, not "2 Days travel"
+features: [camping, guide, food, swimming]
+location: geopoint(36.6289, 44.5311)
+pricePerPerson: 55
+currency: USD               # what a charge is settled in; display conversion is separate
+startAt: <timestamp>        # departure — drives ordering and the date filter
+endAt:   <timestamp>        # return; omit for a one-day tour
+capacity: 24                # optional; absent hides the availability line
+bookedCount: 21             # SERVER-OWNED once checkout exists — read-only in admin
+cancellationPolicy: free_48h   # free_24h | free_48h | free_7d | non_refundable
+guideLanguages: [en, ku, ar]   # ISO 639-1: en | ku | ar | tr | fa
+transportAvailable: true       # operator-configured per departure
+transportPricePerPerson: 5     # in the tour currency; never client supplied
+# reviewScore / ratingCount / ratingBreakdown are SERVER-OWNED — never typed here
+trending: true
+trendingOrder: 1
+highlighted: true
+highlightOrder: 1
+active: true
 ```
 
 ### flights

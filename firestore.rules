@@ -11,6 +11,10 @@ rules_version = '2';
 //   mail                  — Verification Code screen (server-only)
 //   featured              — Home screen carousel (public read)
 //   nature_spots          — Home screen count() (public read)
+//   tours                 — Explore Tours screen (public read)
+//   tours/*/reviews       — tour ratings (public read of published; one
+//                           owner-written doc per user)
+//   currency_rates        — indicative FX rates (public read, admin write)
 //   favorites             — Home screen heart (owner-only)
 //   bookings              — My Bookings screen (owner-only READ; no client write)
 //   nature_spots/*/reviews       — Reviews & Ratings screen (public read of
@@ -320,6 +324,146 @@ service cloud.firestore {
           allow delete: if isVoter();
         }
       }
+    }
+
+    // -------------------------------------------------------------------
+    // tours — catalog data. Public read, admin-only write, exactly like
+    // nature_spots above and for the same reasons (SECURITY.md section 1).
+    //
+    // Read by the Explore Tours screen, which runs two queries against the
+    // collection (the highlighted carousel, and the catalog the search box
+    // and date picker filter in Dart), so `list` is required.
+    //
+    // Public read is correct and deliberate: this is the catalog the whole
+    // app exists to show, browsable by a guest who has never signed in.
+    // There is nothing user-specific in it.
+    //
+    // Write stays admin-only, and here that is a **payment-adjacent**
+    // control, not only an editorial one: `pricePerPerson` and `currency`
+    // are what a future checkout would charge against. A client that could
+    // write this collection could set its own price to zero before booking.
+    // -------------------------------------------------------------------
+    match /tours/{tourId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+
+      // Public traveller reviews, the same arrangement as
+      // nature_spots/*/reviews above — copied deliberately rather than
+      // reinvented, so the two catalogs cannot end up with different
+      // guarantees about who may rate what.
+      //
+      // **The document id IS the author's uid.** That is what makes "one
+      // review per person per tour" a rule rather than a hope: without it a
+      // client could post the same review a hundred times and drag the
+      // average wherever it liked.
+      //
+      // `rating` is a number in 0.5 steps from 0.5 to 5 — the app draws half
+      // stars, and an integer cannot hold a 3.5. The step check is
+      // `rating * 2 == round(rating * 2)`, so 3.7 is rejected even though it
+      // is inside the range.
+      //
+      // `reviewScore`, `ratingCount` and `ratingBreakdown` on the parent are
+      // **server-owned**, written only by the `syncTourReviewAggregates`
+      // trigger — which is why they appear in no allow-list here and why the
+      // parent stays admin-only write.
+      match /reviews/{reviewId} {
+        function authorFields() {
+          return [
+            'userId', 'userName', 'avatarUrl', 'rating', 'comment',
+            'status', 'createdAt', 'updatedAt'
+          ];
+        }
+
+        function isAuthor() {
+          return request.auth != null && request.auth.uid == reviewId;
+        }
+
+        function validRating() {
+          return request.resource.data.rating is number
+            && request.resource.data.rating >= 0.5
+            && request.resource.data.rating <= 5
+            && request.resource.data.rating * 2 ==
+                 math.round(request.resource.data.rating * 2);
+        }
+
+        function validComment() {
+          return request.resource.data.comment is string
+            && request.resource.data.comment.size() >= 3
+            && request.resource.data.comment.size() <= 1000;
+        }
+
+        function validShape() {
+          return request.resource.data.keys().hasOnly(authorFields())
+            && request.resource.data.userId == request.auth.uid
+            && request.resource.data.userName is string
+            && request.resource.data.userName.size() > 0
+            && request.resource.data.userName.size() <= 80
+            && request.resource.data.status == 'published'
+            && validRating()
+            && validComment()
+            && request.resource.data.updatedAt == request.time;
+        }
+
+        // Published reviews are public: someone deciding whether to book has
+        // to be able to read them before creating an account.
+        allow get, list: if resource.data.status == 'published';
+
+        allow create: if isAuthor() && validShape()
+          && request.resource.data.createdAt == request.time;
+        // `createdAt` is pinned, so an author cannot re-date an old review to
+        // push it back to the top of "Most recent".
+        allow update: if isAuthor()
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(authorFields())
+          && request.resource.data.userId == resource.data.userId
+          && request.resource.data.userName is string
+          && request.resource.data.userName.size() > 0
+          && request.resource.data.userName.size() <= 80
+          && request.resource.data.status == 'published'
+          && validRating()
+          && validComment()
+          && request.resource.data.updatedAt == request.time
+          && request.resource.data.createdAt == resource.data.createdAt;
+        allow delete: if isAdmin() || isAuthor();
+
+        // Helpful votes are isolated under the tour review, not shared with
+        // nature reviews. One document keyed by the voter uid makes a second
+        // vote impossible; only the server trigger writes helpfulCount.
+        match /votes/{voterId} {
+          function isVoter() {
+            return request.auth != null && voterId == request.auth.uid;
+          }
+
+          allow get: if isVoter();
+          allow list: if false;
+          allow create: if isVoter()
+            && request.resource.data.keys().hasOnly(['userId', 'createdAt'])
+            && request.resource.data.userId == request.auth.uid
+            && request.resource.data.createdAt == request.time;
+          allow update: if false;
+          allow delete: if isVoter();
+        }
+      }
+    }
+
+    // -------------------------------------------------------------------
+    // currency_rates/latest — one document, read by every screen that shows
+    // a converted price.
+    //
+    // PUBLIC read: a guest browsing the catalog sees prices too.
+    //
+    // Write is admin/server only, and that is a **financial** control rather
+    // than an editorial one: a client that could write this document could
+    // make a $500 tour read as $5. The rates are explicitly *indicative* —
+    // a charge must be settled in the operator's own currency by the payment
+    // processor, never at a rate this app stored (SECURITY.md section 5).
+    // -------------------------------------------------------------------
+    match /currency_rates/{docId} {
+      allow get: if true;
+      // `list` is denied: the app reads one known id (`latest`), so there is
+      // no reason to allow the collection to be enumerated.
+      allow list: if false;
+      allow create, update, delete: if isAdmin();
     }
 
     // -------------------------------------------------------------------

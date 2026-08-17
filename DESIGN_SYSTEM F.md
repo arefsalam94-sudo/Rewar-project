@@ -119,96 +119,39 @@ Do not increase overlay opacity to solve readability. Improve the local glass su
 
 There is one default liquid-glass material for the application. It is reused for glass cards, informational cards, secondary buttons, social buttons, language options, filter containers, filter controls, popup menus, bottom sheets, floating toolbar / bottom navigation, selectable glass surfaces, glass back buttons, auxiliary glass controls, and future components intended to be glass.
 
-### 5.1 Approved visual target
-
-The approved target is the **bright, polished, highly transparent iOS-style Liquid Glass appearance shown in the reference images**.
-
-A compliant surface must look like a piece of polished optical glass floating over the background — **not** like a translucent rectangle with blur.
-
-The material must visibly combine all of these cues:
-
-1. **High transparency** — the background remains recognizable through the surface.
-2. **Moderate optical softening** — blur softens the background but does not erase it.
-3. **Refraction / lens feeling** — content behind the glass appears very slightly bent, magnified, or optically displaced near curved edges.
-4. **Bright light-catching rim** — the perimeter catches light, especially along the upper/light-facing edge.
-5. **Corner highlights** — rounded corners receive soft concentrated highlights, never hard white dots.
-6. **Directional sheen** — a soft glossy highlight passes across the upper portion of the surface rather than using a uniform white fill.
-7. **Subtle inner glow** — a faint luminous layer just inside the rim gives the glass visible thickness.
-8. **Soft floating shadow** — separates glass from the layer behind without creating a Material-card shadow.
-9. **Very subtle theme tint** — enough to belong to the theme, never enough to become a colored panel.
-
-**Blur + translucent fill + uniform border alone is NOT an acceptable Liquid Glass implementation.**
-
-### 5.2 Base glass recipe
-
-Use these values as the implementation starting point:
+### 5.1 Base glass recipe
 
 | Property | Rule |
 |---|---|
-| Backdrop blur | `σ = 14` baseline |
-| Clear/transparency bias | keep the background clearly recognizable |
-| Base sheen | neutral white, directional, approximately `16% → 3%` rather than a flat fill |
-| Theme tint | approximately `4–6%` |
-| Light-catching rim | `1.0–1.2px`; brightness varies around the perimeter |
-| Corner highlight | soft white highlight at approximately `20–30%`, concentrated at rounded corners |
-| Inner glow | soft white/neutral glow at approximately `6–10%` immediately inside the rim |
-| Refraction/lens strength | subtle only; approximately `1–2.5%` local displacement/magnification near edges |
+| Backdrop blur | `σ = 18` |
+| Glass sheen | neutral white vertical sheen, approximately `24% → 8%` |
+| Theme tint | subtle theme glass tint at approximately `6%` |
+| Neutral glass edge | `1px`, soft/light-catching, not a selection indicator |
+| Top/upper highlight | visible but soft; strongest near the light-facing edge |
 | Shadow | low-opacity, wide, fully faded, small offset |
-| Saturation | preserve or slightly lift local color (`~1.05–1.10`) if renderer supports it |
+| Background visibility | clearly visible but softened |
+| Saturation | optional slight preservation boost (`~1.05–1.10`) if renderer supports it |
 | Hard opaque fill | prohibited for ordinary glass |
 
-These are **visual target values**, not permission to recreate the material as a stack of flat opaque gradients. The resulting surface must be judged by appearance.
+The glass must not look like a flat white/green/black panel.
 
-### 5.3 Directional lighting
+### 5.2 Glass edge vs selection stroke
 
-Glass lighting must not be uniform.
-
-Default light direction is from the **upper-left / upper edge** unless the screen composition clearly requires another direction.
-
-- upper/light-facing rim = brighter
-- opposite/lower rim = quieter
-- top corners = softly highlighted
-- center of glass = clearer than the rim
-- do not draw a constant full-opacity white outline around the entire shape
-
-The material should feel rounded and optically thick even when the component itself is geometrically flat.
-
-### 5.4 Refraction / lens requirement
-
-For custom Flutter surfaces, `BackdropFilter` by itself is insufficient.
-
-Where technically feasible, the shared glass implementation should add a subtle optical approximation such as:
-
-- small edge-localized magnification
-- shader-based displacement
-- refractive sampling
-- curved highlight/distortion masks
-- another performant technique that creates the impression that the background bends through the glass
-
-The effect must remain subtle. Text and icons inside the component must never distort.
-
-If the platform/rendering path cannot implement real distortion, preserve the illusion using the directional rim, corner highlights, inner glow, clear center, and asymmetric sheen. Do not compensate with heavier blur.
-
-### 5.5 Glass edge vs selection stroke
-
-These are two different things.
-
-**Neutral liquid-glass rim**
+**Neutral glass edge**
 - belongs to the material itself
-- softly luminous and directionally lit
-- visible on selected and unselected glass
+- subtle
+- visible on both selected and unselected glass
 - must not communicate selection
 
 **Selection/focus stroke**
 - semantic state indicator
 - theme accent color
-- appears only when selected/active/focused
-- sits cleanly outside or over the neutral rim
-- visibly stronger than the ordinary rim
+- appears only when the control is selected/active/focused
+- visibly stronger than the neutral glass edge
 
-Never use the ordinary glass rim as the selected-state indicator.
+Never use the ordinary glass edge as the selected-state indicator.
 
-### 5.6 Soft floating shadow
+### 5.3 Soft floating shadow
 
 Default floating-glass shadow:
 
@@ -221,53 +164,35 @@ Default floating-glass shadow:
 
 Suggested starting geometry:
 
-- `offsetY: 5`
-- `blurRadius: 24`
+- `offsetY: 6`
+- `blurRadius: 22`
 - `spreadRadius: 0`
-- alpha approximately `0.10–0.14`
+- alpha approximately `0.12–0.16`
 
-The shadow supports the glass effect; it never replaces transparency, sheen, rim light, corner highlights, inner glow, or refraction.
+The shadow supports the glass effect; it does not replace transparency, sheen, edge lighting, or depth.
 
-### 5.7 Visual acceptance test
-
-A shared glass component fails review if it can reasonably be described as a **“blurry box.”**
-
-Before approving a glass component, verify:
-
-- background is still visibly present through it
-- center is not covered by a heavy white/green/dark wash
-- at least one light-facing edge is visibly brighter
-- rounded corners catch soft light
-- sheen is directional rather than uniform
-- the surface has visible optical depth
-- shadow is soft and fully faded
-- Light and Dark use the same optical structure
-
-Cards, filters, toolbars, popup surfaces, language controls, secondary buttons, and other glass elements must all inherit this same material rather than implementing their own simplified blur recipe.
+---
 
 ## 6. Stacked liquid glass
 
-When glass surfaces overlap, depth is created by **progressive optical softening + inter-layer shadow**, not by increasing fill opacity.
-
-Every layer must still look like the approved bright Liquid Glass material from Section 5.
+When glass surfaces overlap, depth is created by **progressive blur + inter-layer shadow**, not by increasing fill opacity.
 
 ### 6.1 Blur progression
 
 | Layer | Typical use | Blur |
 |---|---|---|
-| L1 — base | outer card / main glass surface | `σ = 14` |
-| L2 — middle | group card / sheet on L1 | `σ = 18` |
-| L3 — top | glass control / chip / floating sub-surface on L2 | `σ = 22` |
+| L1 — base | outer card / main glass surface | `σ = 18` |
+| L2 — middle | group card / sheet on L1 | `σ = 22` |
+| L3 — top | glass control / chip / floating sub-surface on L2 | `σ = 26` |
 
 Rules:
 
 - blur rises gently with depth
-- do **not** make higher layers more opaque
-- keep the same clear-center, rim-light, sheen, corner-highlight, and refraction logic at every level
-- tint strength remains subtle
+- fill-opacity structure stays the same
+- theme tint strength stays the same unless state styling requires otherwise
 - do not exceed L3 for ordinary UI
 - if four visual glass layers appear necessary, flatten the hierarchy instead
-- never turn L2/L3 into a white or colored frost wall
+- never turn the top layer into an opaque frost wall
 
 ### 6.2 Inter-layer shadows
 
@@ -279,17 +204,9 @@ Rules:
 - wide blur
 - no visible boundary line
 
-The upper layer should feel physically closer to the viewer because it is slightly more optically softened and casts a gentle shadow — **not** because it has a heavier fill.
+The user should perceive that one glass sheet sits above another without seeing a hard shadow edge.
 
-### 6.3 Layer lighting
-
-When glass layers overlap:
-
-- keep highlights readable on each layer
-- do not stack multiple bright rims into a thick white border
-- reduce overlapping highlight intensity where necessary
-- preserve the perception of separate glass sheets
-- retain background color/detail through the entire stack as far as readability allows
+---
 
 ## 7. Selection, focus, and control states — global
 
@@ -349,98 +266,39 @@ Do not invent a separate card language for success, warning, error, or info.
 
 ## 8. Input fields — recessed liquid glass
 
-All standard form/search/text inputs use the same **recessed / inset Liquid Glass** style in both themes.
+All standard form/search/text inputs use the same recessed style in both themes.
 
 Examples: Login, Register, Search, Booking forms, Profile forms, and future data-entry screens.
 
-The approved depth reference is the **current Dark Register field treatment**: fields look visually deeper than the surrounding card. Light mode must use the same depth construction with Light-theme colors.
+### 8.1 Visual relationship
 
-### 8.1 Mandatory visual relationship
+- outer card/panel = floating liquid glass
+- field inside it = recessed/inset liquid glass
 
-- outer card/panel = floating polished Liquid Glass
-- field inside it = recessed/inset Liquid Glass
-- both remain translucent
-- the field must appear to sit **inside** the parent surface rather than being a gradient rectangle placed on top
-
-The Light theme must not use a left-to-right brand-gradient fill to create the field body.
+The field should feel slightly deeper than its parent, like the approved Dark Register reference, but softened so it remains glass rather than a carved solid box.
 
 ### 8.2 Input recipe
 
 - control height: `56dp`
 - radius: `14px`
-- retain the approved Liquid Glass material
-- use a subtle theme tint only
-- add a clearly perceptible but soft inset/inner shadow
-- add a quiet inner highlight on the opposite edge so the field still reads as glass
-- keep the center transparent enough for environmental color to remain visible
-- neutral liquid-glass rim when inactive
-- accent selection/focus stroke when focused
+- base glass material retained
+- subtle theme tint
+- soft inset/inner shadow
+- neutral glass edge when inactive
+- accent stroke on focus
 - error stroke on validation error
 - text and hint colors come from semantic typography tokens
 
-### 8.3 Recessed depth recipe
+Suggested inner-depth starting point:
 
-Use this as the starting target:
+- inner shadow offset: `0, 2`
+- inner shadow blur: `10`
+- low opacity (`~0.14`)
+- no sharp inner border
 
-- inset shadow: `0, 2`
-- inset blur: approximately `10–12`
-- inset opacity: approximately `0.16–0.20`
-- optional second very soft inset shadow from the upper edge to reinforce depth
-- opposite inner highlight: approximately `6–10%`
-- no hard inner line
-- no opaque dark cavity
-- no horizontal brand-gradient fill
+If the framework has no native inset shadow, reproduce the appearance with layered decoration/painting rather than dropping the depth effect.
 
-The recessed effect must be visible in **both Light and Dark**.
-
-The two themes change the tint/shadow colors only; the depth amount, geometry, blur, and construction stay the same.
-
-### 8.4 Focus and selection
-
-When focused:
-
-- keep the inset depth
-- keep the Liquid Glass rim/highlight
-- add the theme accent stroke
-- slightly strengthen the theme tint if needed
-- do not flatten or brighten the field into a solid control
-
-When unfocused:
-
-- no accent selection stroke
-- preserve inset depth
-- preserve subtle neutral rim
-
-### 8.5 Multi-line inputs
-
-Added with the Reviews & Ratings composer. A multi-line field is the **same
-recessed-glass input**, with `minLines`/`maxLines` set — not a second control.
-Section 22 lists "different input families on different screens" as prohibited,
-and a review box is a text input like any other.
-
-- the recessed depth, radius and rim are unchanged; only the height grows
-- the character counter is **not** drawn inside the field — it would sit
-  outside the glass and break the recessed shape. A screen that needs a count
-  draws its own, beside the label
-- `maxLength` caps typing for UX; the real limit is re-validated in the
-  security rules (section 7 of `SECURITY.md`)
-
-### 8.6 Implementation note
-
-If the framework has no native inset-shadow primitive, reproduce the depth using layered decoration, custom painting, clipping, shader/mask techniques, or another performant method.
-
-Do **not** drop the inset depth merely because a standard `Container` cannot render an inner shadow.
-
-### 8.7 Visual acceptance test
-
-A standard input fails review if:
-
-- Light looks like a gradient overlay while Dark looks recessed
-- the field appears raised above its parent card
-- the inner shadow is absent
-- the field becomes opaque
-- focus removes the recessed appearance
-- Light and Dark use different depth geometry
+---
 
 ## 9. Buttons
 
@@ -586,48 +444,6 @@ Rules:
 - do not redesign rating structure per screen
 
 Rating badges are semantic badges, not ordinary base-glass cards.
-
-### 13.1 Half stars, and where they are allowed
-
-Added with the Reviews & Ratings screen. A single review's rating is stored in
-**half-star steps**, so the star row has three states per star — full, half,
-empty — and the score beside it is `stars × 2` out of 10.
-
-- **Half stars belong to per-review surfaces only**: the Reviews & Ratings
-  list, its Average Rating header, and its composer.
-- **The place-level badges keep whole stars.** The Explore Nature card and the
-  detail hero were approved with whole stars derived by `round(score / 2)`;
-  switching them to halves would restyle two already-built screens as a side
-  effect of adding a third. `NatureSpot.halfStarsForScore` exists alongside
-  `starsForScore` so the two are an explicit choice, not an accident.
-- The `N.N / 10` pairing draws the **number large and the `/ 10` suffix quiet**,
-  and the whole run stays LTR in every language, like every other rating.
-
-### 13.2 Interactive star input — an accessibility exception, recorded
-
-The composer's star row is tappable in half-star steps. Section 19 requires a
-`48 × 48dp` hit area per control, and half a star cannot be 48dp wide without
-the row running off a phone. The exception is taken deliberately, with three
-mitigations, rather than dropping half stars (which would make the design's
-7.0 and 9.0 scores unreachable):
-
-- the row is **56dp tall**, so the vertical half of the requirement is met;
-- it accepts a **horizontal drag**, so a value can be landed without hitting a
-  20dp target;
-- it exposes **slider semantics** with increase/decrease actions, so assistive
-  technology adjusts it in half steps without touching the geometry at all.
-
-This exception applies to the rating input only. Do not use it to justify
-narrow targets anywhere else.
-
-### 13.3 Rating distribution bars
-
-The 5★→1★ bars beside an average score are a pill-radius
-`LinearProgressIndicator` on a quiet track, in the theme accent — not a new
-component family, and not a chart. Each bar carries its own Semantics label
-(`"4 ★ 20%"`), because five bare percentages in a column read as noise to a
-screen reader. The whole block stays LTR: a star count, a bar and a percentage
-are a measurement sequence (section 20).
 
 ---
 
@@ -834,10 +650,6 @@ Do not reintroduce:
 - selection communicated only by a checkmark
 - different input families on different screens
 - flat frosted panels pretending to be liquid glass
-- `BackdropFilter` + translucent fill + uniform border used as the complete glass implementation
-- uniform bright borders with no directional rim/corner lighting
-- ordinary glass surfaces with no visible sheen, inner glow, or optical depth
-- Light input fields rendered as horizontal brand-gradient overlays instead of recessed glass
 - fill-opacity ramps for stacked glass
 - per-screen random glass recipes
 - separate typography token names between themes

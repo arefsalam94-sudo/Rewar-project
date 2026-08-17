@@ -10,13 +10,11 @@ class ThemeModeToggle extends StatelessWidget {
     required this.isDark,
     required this.onChanged,
     this.compact = false,
-    this.nativeIOS26 = false,
   });
 
   final bool isDark;
   final ValueChanged<bool> onChanged;
   final bool compact;
-  final bool nativeIOS26;
 
   static const double _thumbInset = 4;
 
@@ -45,7 +43,6 @@ class ThemeModeToggle extends StatelessWidget {
             dark: isDark,
             quality: AppLiquidGlassQuality.standard,
             interactive: true,
-            nativeIOS26: nativeIOS26,
             onTap: () => onChanged(!isDark),
             child: SizedBox(
               width: width,

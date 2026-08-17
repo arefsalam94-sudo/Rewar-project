@@ -990,3 +990,503 @@ Checked against both products' current review surfaces. None of this was built
 8. **Review text is not length-guided.** Both nudge toward a useful length; we
    accept three characters.
 
+
+## 2026-08-17 — Phase 6: Explore Tours screen
+
+Built from the supplied reference and its functional description, opened by the
+Home screen's "Explore Tours" card (previously "coming soon").
+
+**Built out of order, deliberately.** Phases 4 (Where to Stay) and 5 (Car
+Rental) are still NOT STARTED. This screen was requested directly, with its
+reference image and a full description of every element, so it was built;
+`ROADMAP.md` now records the skip rather than leaving it to be noticed later.
+
+### What was built
+
+- **`lib/screens/explore_tours_screen.dart`** — the screen.
+  - Back button and page title on **one row** (the reference draws them that
+    way; Explore Nature stacks them, and neither was changed to match the
+    other — each follows its own approved reference).
+  - A carousel of `highlighted` tours: photo, operator tag in the top corner,
+    name, location line, clipped description, and the page dots pinned to the
+    opposite corner **outside** the `PageView` so they stay still as slides
+    move.
+  - The two search controls and the Apply button. Both fields are the shared
+    `AppRecessedGlassField` — `DESIGN_SYSTEM.md` 8 requires one input family
+    app-wide and 22 lists "different input families on different screens" as
+    prohibited.
+  - "Trending Tours", then a card per tour: photo on the **leading** edge (so
+    the card mirrors in Kurdish and Arabic rather than reading backwards),
+    name, operator tag, trip length, four stroke-only circled feature icons
+    (`DESIGN_SYSTEM.md` 11.1: 44dp circle, 22dp icon, 1.5px stroke, no fill),
+    location line, live distance, clipped description, date range and the
+    price-per-person box.
+- **`lib/models/tour.dart`** — `Tour` + `TourFeature`, plain Dart (no
+  `cloud_firestore` import), so it is testable without Firebase.
+- **`lib/services/tours_service.dart`** — two queries plus bundled preview
+  data, mirroring `NatureSpotsService` exactly.
+- **`tool/seed_explore_tours.js`**, `firestore.rules`, two new indexes, and
+  the localization for all three languages.
+
+### The `tours` schema had to be revised before anything could be drawn
+
+The eight-field draft in `DATA_MODEL.md` could not render a single card. Six
+changes, all recorded there:
+
+1. `name` / `description` / `locationLabel` became **locale maps**. They were
+   plain strings in a trilingual app.
+2. `duration: "3 days travel"` became **`durationDays: 3`**. A stored English
+   sentence prints English on a Kurdish card; the app builds the line from the
+   number.
+3. **`startAt` / `endAt` added.** The card draws a date range and the screen
+   filters by date; neither was expressible before.
+4. **`currency` added**, matching `AppCurrency` and `bookings.currency`.
+5. **`active`, `highlighted` + `highlightOrder`, `trending` + `trendingOrder`
+   added** — the same admin controls `nature_spots` and `featured` already have.
+6. `features` was pinned to snake_case ids matching a Dart enum, so an unknown
+   tag is dropped rather than drawn as a nameless circle.
+
+**No `reviewScore` on `tours`.** The reference draws no rating on a tour card,
+and the three aggregates on `nature_spots` are server-owned by a Cloud Function
+trigger — adding hand-typed ones here would contradict that the moment tour
+reviews exist.
+
+### Security
+
+- `tours` is **public read, admin-only write**, like `nature_spots` and
+  `featured`. Here that is a **payment-adjacent** control, not only an
+  editorial one: `pricePerPerson` and `currency` are what a future checkout
+  charges against, so a client that could write this collection could set its
+  own price to zero before booking (`SECURITY.md` 5).
+- No new client write path exists on this screen at all — it only reads.
+- The rules have **not been denial-tested**; that needs a live project.
+
+### Judgment calls worth flagging
+
+- **Apply actually applies.** Typing in the search box changes nothing until
+  the button is pressed. The reference has an explicit Apply button, so making
+  the list filter live would have made that button decorative.
+- **The search is done in Dart, not in a query, and cannot be otherwise.**
+  Firestore has no substring match, and `name` is a locale map — a server-side
+  search would have to pick one of three languages and fail the other two.
+  Documented in `DATA_MODEL.md` with the point at which it stops being right
+  (200 documents).
+- **The date field is read-only and opens a picker.** A typed date needs a
+  parser, and a parser covering three languages is a source of wrong dates.
+- **The Apply button is 200dp wide, not full width.** The token geometry
+  (56dp, radius 14, solid action fill) is unchanged; `DESIGN_SYSTEM.md` 9.1
+  says full width "where the page layout calls for" it, and this one does not.
+- **A list card draws at most four feature icons.** The reference shows four,
+  and a fifth does not fit beside a 140dp thumbnail at a readable label size.
+  Extra tags stay in Firestore for the detail screen.
+- **The cards are not tappable.** There is no tour detail screen yet, and a
+  card that opens nothing is worse than a card that says nothing. Wiring it is
+  one line when that screen exists.
+- **Abbreviated months are English-only.** Kurdish and Arabic have no
+  conventional three-letter month abbreviation, so those two spell the month
+  out; the range collapses to "Aug 14 - 16" / "14 - 16 ئاب" when both ends
+  share a month, which is what keeps the column narrow.
+- **Nothing converts currency.** The price shows in the currency the operator
+  quoted. Showing the user's preferred currency needs a live rate, and a stale
+  rate on a price is worse than an honest foreign one.
+- **`formatTourDistance` is a copy of Explore Nature's `formatSpotDistance`**,
+  not an import — that one is `@visibleForTesting`. If a third screen needs it,
+  move both into a shared helper then.
+
+### Known placeholders / not wired up
+
+- **Nothing is seeded** — still no Firebase project, and `node` is still not
+  installed on this machine, so `tool/seed_explore_tours.js` has not been run
+  or syntax-checked.
+- **No tour photographs.** Every seeded document has an empty `imageUrls`, so
+  cards fall back to a brand-coloured panel with a tour icon.
+- **The rules have not been denial-tested.** Release blocker for this screen.
+- **Tapping a card does nothing** — see above.
+- **Kurdish and Arabic strings are translation**, not copy reviewed by a native
+  speaker — the same caveat as every other screen.
+- **Not run on a device** — the same Windows Developer Mode blocker as every
+  screen since the Home screen. Verification is the test suite only.
+
+### Verification
+
+`flutter analyze` reports no issues across the whole project. The new suite is
+**28 tests, all passing**: the model's locale fallback, `fromMap` parsing and
+rejection, unknown-feature dropping, multilingual search matching, the
+whole-run date match, trending ordering, the three date-range shapes in all
+three languages, the plural duration line, a check that every new string exists
+in all three languages *and differs from English*, distance formatting, the
+background treatment, the back-button/title row geometry, the carousel and card
+content, the four-icon cap, distance shown and hidden, Apply-gated search
+costing no extra read, the empty result and its clear action, load failure and
+retry, the empty catalog, the empty carousel, LTR dots under RTL, Kurdish and
+Arabic rendering, dark mode, and the feature-circle rule.
+
+The Explore Nature, nature detail and Reviews suites still pass (59 tests), so
+nothing regressed. The pre-existing failures recorded above (empty placeholder
+test files, background-blur, My Bookings, New Card, billing, account-editing)
+are unchanged and unrelated.
+
+### Gap review against Agoda / Booking.com — tour / "Things to do" listings
+
+Checked against both products' current attraction and activity surfaces. **None
+of this was built** — the ask was the reference screen; recorded so it is on
+the table for the tour detail screen and for `DATA_MODEL.md`:
+
+1. **No rating anywhere on a tour.** Both lead with a score and a review count
+   on every activity card, and it is the single strongest signal a traveller
+   uses to choose between two similar tours. Ours has neither — deliberately,
+   because the reference draws neither and because the aggregates must be
+   server-derived. This is the biggest single gap, and it needs the
+   `nature_spots` review arrangement copied wholesale onto `tours`.
+2. **No availability or "N spots left".** Both show whether a departure can
+   still be booked. Ours lists a tour whether or not it is full, which will
+   become a support problem the day booking exists. Needs a `capacity` /
+   `bookedCount` pair, and both must be **server-owned**.
+3. **No cancellation policy on the card.** "Free cancellation until 24h
+   before" is on virtually every Booking.com and Agoda activity card, and it
+   converts. It is also a `legal_documents` consistency risk if typed per tour
+   rather than referenced.
+4. **No sort control.** Ours orders by departure date with the admin's
+   trending picks first. Both offer price / rating / popularity / distance.
+5. **No filters beyond text and one date.** Both filter by price range,
+   duration, language of the guide, and category. Our `features` array is
+   already the right shape for a chip row like Explore Nature's Customize
+   screen — the data is there, the UI is not.
+6. **No date *range*, only a single day.** Both take check-in/check-out or a
+   flexible range. Our picker answers "what runs on this day?", which is the
+   narrower question.
+7. **No "from" price or price-per-group.** Ours is strictly per person; both
+   handle group pricing and show a "from" price where tiers exist.
+8. **No group-size / traveller-count selector.** Both take it before showing
+   prices, because the price depends on it.
+9. **No currency conversion.** Both show the traveller's own currency with a
+   disclosed rate. Ours shows the operator's currency, which is honest but not
+   equivalent — and `users.preferredCurrency` already exists, so the gap is a
+   rate source, not a schema change.
+10. **No map view of results**, and no "distance from city centre" framing —
+    ours measures from the device, which is better when location is granted and
+    absent when it is not. Both fall back to a landmark.
+11. **No saved/favourite control on a tour card.** `favorites` already supports
+    `itemType: "tour"`; the heart simply is not drawn here.
+12. **No language-of-tour field.** Both list which languages a guide speaks,
+    which matters more here than in most categories.
+
+## 2026-08-17 — Explore Tours: closing the Agoda / Booking.com gaps
+
+Ten of the twelve items from the gap review above were built. The two left
+alone are **#7 group/"from" pricing** and **#10 a map view of results** — both
+were outside the request, and both are recorded below as still open.
+
+The rating placement is as asked: **leading edge on the carousel slide,
+trailing edge on a list card**.
+
+### 1. Ratings and review counts — the biggest gap, and the one with a backend
+
+Not a field anyone types. `tours` gained `reviewScore`, `ratingCount` and
+`ratingBreakdown`, all three **server-owned**, plus a `tours/{id}/reviews`
+subcollection and a `syncTourReviewAggregates` Cloud Function that recomputes
+them on every review write.
+
+The whole `nature_spots` arrangement was **copied deliberately rather than
+reinvented** — same half-star grid, same uid-as-document-id rule (which is what
+makes "one review per person per tour" enforceable), same recompute-not-
+increment reasoning (triggers are at-least-once, so an increment applied twice
+corrupts a count permanently while a recompute repairs drift). Two catalogs
+with different guarantees about who may rate what would be the actual bug.
+
+Deliberately **not** added: `helpfulCount` and the `votes` subcollection.
+Nothing in the app can cast a helpful vote on a tour review, and a write path
+with no UI behind it is surface area for nothing.
+
+**No new index was needed** — the `reviews` composite indexes are
+`COLLECTION_GROUP`-scoped and keyed on the collection *id*, so they already
+serve `tours/*/reviews`.
+
+Display: score badge + five stars on the carousel (leading edge), score badge +
+"128 reviews" on a card (trailing edge). The card omits the star row because
+its column is ~230dp wide and `DESIGN_SYSTEM.md` 13 approves either form. An
+unrated tour says "No reviews yet" rather than drawing a 0.0.
+
+### 2. Availability
+
+`capacity` + `bookedCount`, with `bookedCount` **server-owned**. The card says
+"Only 3 spots left" — but only when the number is genuinely small (≤ 5),
+because a "48 spots left" badge is noise and printing it everywhere teaches
+people to ignore it.
+
+**A departure that cannot seat the whole party is filtered out**, which is what
+both reference products do — so there is deliberately **no "Sold out" pill**: a
+badge that can never render is dead UI.
+
+The important half of this is in `functions/index.js` and `DATA_MODEL.md`, not
+in the screen: when checkout exists it must re-check `capacity - bookedCount`
+and bump it **inside one transaction**. A client-side availability check is a
+suggestion, not a check, and a `bookings` trigger fires after the money is
+taken.
+
+### 3. Cancellation policy
+
+A **tier** (`free_24h` / `free_48h` / `free_7d` / `non_refundable`), not free
+text. The wording lives in `legal_documents/cancellation_refunds`; a hundred
+operator-typed paragraphs would drift from the policy the app actually
+enforces, which is the failure `DATA_MODEL.md` already warns about for
+`help_topics`.
+
+### 4–6. Sort, refinement chips, date ranges
+
+- **Sort**: soonest (default) / price ↑ / price ↓ / top rated / nearest.
+- **Refine**: eight feature chips and five guide-language chips, OR within a
+  group and AND across groups — the semantics `NatureFilters` established.
+- **Dates**: the single date field became a **range** picker, matching by
+  **overlap rather than containment** — someone searching 14–20 August wants
+  the three-day trip starting on the 19th.
+
+All of it runs over the one catalog read already in memory, so the collection
+still needs exactly two indexes.
+
+### 7. Traveller count
+
+A stepper (1–20) rather than a text field: the value is a small integer with
+hard bounds, and a keyboard invites "0" and "300". It does two things — prices
+the trip, and hides departures that cannot seat the party. Showing someone a
+tour with two places left when they have said there are four of them is how a
+booking failure gets discovered at the payment screen.
+
+### 8. Currency conversion
+
+New `currency_rates/latest` document, `CurrencyRatesService`, and a
+`TourPricing` value object. Reads `users.preferredCurrency`, which already
+existed.
+
+The design point is what it refuses to do: `CurrencyRates.convert` returns
+**null** for any currency missing from the table, and the UI then falls back to
+the operator's own price. An unconverted true price beats a converted invented
+one. Converted figures are prefixed `≈`, and a one-line disclosure sits above
+the list — drawn **only when something on screen was actually converted**,
+because a standing notice nobody needs is what makes real disclosures
+invisible.
+
+**These rates are indicative, not transactional**, and that is written into the
+service, the seed script, the rules comment and `DATA_MODEL.md`: a charge must
+be priced in the operator's own currency and converted by the payment
+processor, or the app takes on FX risk it cannot hedge.
+
+### 9. Favourite heart
+
+Reuses `FavoritesService` with `FeaturedType.tour`, which `favorites` already
+supported — no schema change, no new rule. Guests get the same sign-in sheet
+the Home screen shows; a favourite is keyed by uid, so there is no such thing
+as an anonymous one.
+
+### 10. Guide languages
+
+`guideLanguages`, ISO 639-1 codes from a closed set (`en`, `ku`, `ar`, `tr`,
+`fa`) so the chips and the card line can be localized. Free text could not be
+translated or filtered.
+
+### Firebase changes
+
+- **`firestore.rules`** — `tours/*/reviews` (public read of published,
+  author-owned write, half-step rating validation, `createdAt` pinned on
+  update) and `currency_rates` (public `get`, **`list` denied** because the app
+  reads one known id, admin-only write).
+- **`firestore.indexes.json`** — no new index; the existing `reviews`
+  collection-group entries already cover tours. The comment now says so, so the
+  next person does not add a redundant one.
+- **`functions/index.js`** — `syncTourReviewAggregates`, plus the recorded
+  contract for the availability transaction.
+- **`tool/seed_explore_tours.js`** — the new fields and five reviews (three for
+  Alibag, two for Sherana, **none for Korek on purpose**, so the "No reviews
+  yet" state is testable against live data).
+- **`tool/seed_currency_rates.js`** — new.
+
+### Judgment calls worth flagging
+
+- **Apply gates the search inputs; chips and sort write through.** Text, dates
+  and party size describe a *search*, so they wait for the button — otherwise
+  Apply is decorative. Chips and sort refine a result set already on screen,
+  which is how both reference products behave.
+- **Trending pins lead the default order only.** Once the user chooses
+  "cheapest", honouring an editorial pin above their instruction just looks
+  like a broken sort.
+- **Items missing a sort key sort last, never first.** A tour with no price is
+  not the cheapest *and* not the most expensive; an unrated tour is not the
+  worst rated. Tested in both directions.
+- **"Nearest to me" is hidden without a GPS fix**, and falls back to "soonest"
+  if it is somehow selected — presenting an arbitrary order as "nearest" is
+  worse than one option fewer.
+- **No "Sold out" badge**, because sold-out departures are filtered out. See #2.
+- **Abbreviated months stay English-only.** Kurdish and Arabic have no
+  conventional three-letter abbreviation.
+- **`bookedCount` is seeded but server-owned.** The seeded values exist only so
+  the availability line is reviewable.
+
+### Known placeholders / not wired up
+
+- **Nothing is seeded** — still no Firebase project, and `node` is still not
+  installed on this machine, so neither seed script has been run or
+  syntax-checked.
+- **The two Cloud Functions have never run.** Until `syncTourReviewAggregates`
+  is deployed, a seeded tour shows **no score at all** — the expected failure,
+  not a bug in the screen.
+- **Nothing refreshes `currency_rates`.** Release blocker for converted prices;
+  a stale rate is the failure mode to design against, which is why the document
+  carries `updatedAt` and the app prints it.
+- **No tour checkout**, so the availability transaction described above exists
+  only as a recorded contract.
+- **The rules have not been denial-tested.** Release blocker.
+- **Cards are still not tappable** — no detail screen.
+- **No tour photographs.**
+- **Kurdish and Arabic strings are translation**, not copy reviewed by a native
+  speaker.
+- **Not run on a device** — the same Windows Developer Mode blocker as every
+  screen since the Home screen.
+
+### Verification
+
+`flutter analyze` reports no issues across the whole project. The tours suite
+grew from 28 to **59 tests, all passing**, including: availability derivation
+(clamped, absent, low, roomy), OR-within/AND-across filter semantics, party
+size hiding a departure, missing-sort-key ordering in both price directions and
+for ratings, the "nearest" fallback, trending pins leading only the default
+order, date-range **overlap** at both ends, cross-rate conversion through the
+base, null-on-unknown-currency, the `≈` marking, the operator-currency
+fallback, money formatting and grouping, the party total appearing only above
+one traveller, real singulars in all three languages, rating on the leading
+edge of the carousel and the trailing edge of a card, the unrated state, the
+low-availability line, the cancellation tier, the guide-language line, chips
+filtering with no extra read, the sort reordering with no extra read, the guest
+sign-in gate and a signed-in save, and the 48dp targets.
+
+The Explore Nature, nature detail and Reviews suites still pass (59 tests).
+**Two My Bookings tests fail, and were verified pre-existing** by stashing this
+work and re-running — identical failures either way.
+
+Four zero-byte test stubs (`test/models/tour_test.dart`,
+`tour_filters_test.dart`, `test/services/tours_service_test.dart`,
+`currency_rates_service_test.dart`) appeared alongside the new source files and
+were deleted; empty files with no `main()` are counted as suite failures, and
+these are already covered by `explore_tours_screen_test.dart`.
+
+### Still open from the original gap review
+
+- **#7 — group / "from" pricing.** Prices are strictly per person. Both
+  products handle tiered group pricing and show a "from" price where tiers
+  exist.
+- **#10 — map view of results.** Ours measures distance from the device, which
+  is better when location is granted and absent when it is not; both products
+  fall back to a landmark ("2 km from city centre") and offer a map.
+
+## 2026-08-17 — Firebase toolchain installed on this machine
+
+Not a code change; recorded because **every entry above says "`node` is still
+not installed on this machine"**, and that is no longer true.
+
+| Tool | Version |
+|---|---|
+| Node.js | v24.19.0 (LTS "Krypton") |
+| npm | 11.17.0 |
+| Firebase CLI | 15.27.0 |
+| FlutterFire CLI | 1.4.1 |
+
+Installed from the **official portable zip** rather than the MSI, because this
+account is not a local administrator and the MSI needs elevation (a UAC dialog
+nobody could approve from a terminal). Extracted to `%LOCALAPPDATA%\Programs`
+and added to the **user** `Path` — nothing machine-wide was touched, and it is
+reversible by deleting the folder and the two `Path` entries.
+
+`functions/npm install` ran cleanly (189 packages); `firebase-admin` and
+`firebase-functions` both load.
+
+### What this immediately bought us
+
+**All seven JavaScript files now pass `node --check`** — `functions/index.js`
+and every script in `tool/`. Until today none of them had ever been parsed by
+anything, so "the seed script has not been run or syntax-checked" was a real
+risk on six files including the two written this week. They are clean.
+
+That is only syntax. None of them has been *run*, because there is still no
+Firebase project to run them against.
+
+### What is still blocked, and why it cannot be unblocked from here
+
+- **`firebase login`** opens a browser and authenticates a Google account.
+- **Creating the project**, choosing **Blaze** (Cloud Functions will not deploy
+  on Spark), and downloading a **service-account key** are all console actions
+  under a personal account.
+
+Those are the only remaining prerequisites. Once the project exists and the CLI
+is logged in, the deploy and all five seeds can run from here unattended.
+
+> `functions/package.json` pins the **deploy** runtime to Node 20. That is
+> correct and should stay — it is the Cloud Functions runtime, not the local
+> one. Node 24 locally only runs the CLI and the seed scripts.
+## 2026-08-17 — Phase 6: Tour detail and estimate page
+
+Built the page opened by both a highlighted-tour slide and a tour list card,
+using the supplied `Explore Tour+` mockup and the approved light/dark design
+system. This remains **awaiting review/approval**.
+
+### What was built
+
+- The Explore Tours background asset remains the full-page photo under the
+  shared sigma-2 blur and 45% theme gradient. The physical top-left back button
+  sits outside the gallery.
+- A larger swipeable gallery carries the operator badge and fixed page dots;
+  the detail card, all known circular facility icons, live coordinate weather,
+  and the tappable in-app map follow it.
+- The review card reads the two newest documents from
+  `tours/{tourId}/reviews`, then opens the existing full review experience
+  through a tour adapter. Reviews, helpful votes and preview-mode state stay
+  separate from `nature_spots`; the copy is tour-specific in English, Kurdish
+  and Arabic.
+- Checkout estimates one or more travellers and an optional per-person bus
+  add-on. `transportAvailable` and `transportPricePerPerson` were added to the
+  tour model, Firestore schema and seed fixtures. The total recalculates without
+  writing any booking.
+- Reserve Insight is fixed above the system safe area and intentionally
+  disabled. Its payment/booking action was explicitly deferred to the next
+  update, so this pass does not create a client-write path around the protected
+  `bookings` collection.
+
+### Database and security changes
+
+- Tour reviews now have the same one-user/one-document, half-star, timestamp,
+  helpful-vote and server-owned aggregate guarantees as nature reviews.
+- Added `tours/{tourId}/reviews/{reviewId}/votes/{uid}` rules and
+  `syncTourReviewHelpfulCount`; vote listing is denied and only the server can
+  write `helpfulCount`.
+- The existing collection-group review indexes already cover tour reviews, so
+  no new Firestore index was needed.
+- `DATA_MODEL.md`, `SECURITY.md`, `SEED_DATA.md`, `ROADMAP.md`, the preview
+  fixtures and `tool/seed_explore_tours.js` were updated together.
+
+### Current Booking.com / Agoda audit
+
+Checked current official attraction/activity pages on both products. The page
+now covers their common gallery, duration, operator, location, traveller count,
+transport add-on, cancellation tier, facilities, map and rating/review signals.
+The remaining gaps are deliberately recorded rather than silently added:
+
+1. Structured **what is included / not included** lists.
+2. A stop-by-stop itinerary / “what to expect”, not only one description.
+3. Meeting point, pickup area/time and departure/return instructions.
+4. Package/time-slot/ticket options and adult/child pricing.
+5. Mobile ticket/QR confirmation after payment.
+6. Restrictions, accessibility/fitness guidance and what-to-bring notes.
+7. Verified-booker reviews, review photos and operator responses.
+8. Actual payment, confirmation, refund and support flow — deferred with the
+   Reserve Insight behavior.
+
+Those items need product decisions and additional schema before implementation;
+none was invented in this page-only pass.
+
+### Verification and remaining blockers
+
+- `flutter analyze`: no issues.
+- 88 affected tests pass (tour list/detail/review adapter/service plus nature
+  detail/reviews).
+- Node.js and Firebase CLI are not installed on this machine, so the changed
+  Cloud Function/seed script could not be syntax-checked or deployed.
+- No live Firebase project is configured here; seed execution, rule denial
+  tests, function deployment and device visual approval remain release blockers.

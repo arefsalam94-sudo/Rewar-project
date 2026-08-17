@@ -55,41 +55,25 @@ Every screen must use a developer-supplied background photograph.
 
 ---
 
-## 3. Liquid-glass optical tokens
+## 3. Liquid-glass theme tint
 
-The optical structure is defined by `DESIGN_SYSTEM.md`. These tokens supply Light-theme color only.
+The base glass material comes from `DESIGN_SYSTEM.md`.
+
+Light-specific tint tokens:
 
 | Token | Value |
 |---|---|
 | `glass-tint` | `#E1F4E5` |
-| `glass-tint-opacity` | `0.05` |
-| `glass-rim-highlight` | `#FFFFFF` |
-| `glass-rim-highlight-opacity` | `0.55` |
-| `glass-corner-highlight` | `#FFFFFF` |
-| `glass-corner-highlight-opacity` | `0.26` |
-| `glass-inner-glow` | `#FFFFFF` |
-| `glass-inner-glow-opacity` | `0.08` |
+| `glass-tint-opacity` | `0.06` |
+| `glass-edge` | white/light neutral |
 | `glass-shadow-color` | `#0E2A44` |
-| `glass-shadow-opacity` | `0.12` |
-| `glass-inset-shadow-color` | `#0E2A44` |
-| `glass-inset-shadow-opacity` | `0.18` |
-| `glass-inset-highlight` | `#FFFFFF` |
-| `glass-inset-highlight-opacity` | `0.08` |
+| `glass-shadow-opacity` | `0.14` |
+| `glass-inner-shadow-color` | `#0E2A44` |
+| `glass-inner-shadow-opacity` | `0.14` |
 
-Light glass must feel **bright, clear, glossy, and polished**, not milky or mint-filled.
+The glass itself must remain transparent. The mint tint is subtle and must not turn the surface into a mint card.
 
-The mint tint is environmental color only. The center of the glass should remain substantially clearer than the light-catching rim and corners.
-
-Refraction/lens strength, blur, sheen geometry, corner lighting, and shadow geometry come from `DESIGN_SYSTEM.md` and must match Dark mode structurally.
-
-### Recessed inputs
-
-Light inputs use the same inset depth as Dark inputs:
-
-- use `glass-inset-shadow-color` / `glass-inset-shadow-opacity`
-- preserve a quiet inner highlight
-- do not use the old `#E1F4E5 → #187C64` horizontal gradient as the field body
-- focus adds `selection-accent` while the inset depth remains visible
+---
 
 ## 4. Selection and focus
 

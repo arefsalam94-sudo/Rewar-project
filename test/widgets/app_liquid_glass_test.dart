@@ -84,20 +84,4 @@ void main() {
     expect(find.byType(AdaptiveGlass), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
-
-  testWidgets('native rollout keeps AdaptiveGlass on non-iOS platforms', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      _host(
-        const AppLiquidGlass(
-          nativeIOS26: true,
-          child: SizedBox(width: 160, height: 64),
-        ),
-      ),
-    );
-
-    expect(find.byType(AdaptiveGlass), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
 }

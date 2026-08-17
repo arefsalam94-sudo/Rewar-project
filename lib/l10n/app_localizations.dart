@@ -7,6 +7,8 @@ import '../models/help_topic.dart';
 import '../models/nature_detail.dart';
 import '../models/nature_filters.dart';
 import '../models/policy_topic.dart';
+import '../models/tour.dart';
+import '../models/tour_filters.dart';
 
 /// App localization for English, Kurdish (Sorani) and Arabic.
 ///
@@ -609,6 +611,93 @@ class AppLocalizations {
       'month12': 'December',
       'timeAm': 'AM',
       'timePm': 'PM',
+      // Abbreviated months, used only by the Explore Tours date range where a
+      // full month name would wrap the price column off the card. Deliberately
+      // **English only**: Kurdish and Arabic have no conventional three-letter
+      // month abbreviation, and inventing one is worse than printing the full
+      // name, so `_monthLabel` falls back to `monthName` for those two.
+      'monthShort1': 'Jan',
+      'monthShort2': 'Feb',
+      'monthShort3': 'Mar',
+      'monthShort4': 'Apr',
+      'monthShort5': 'May',
+      'monthShort6': 'Jun',
+      'monthShort7': 'Jul',
+      'monthShort8': 'Aug',
+      'monthShort9': 'Sep',
+      'monthShort10': 'Oct',
+      'monthShort11': 'Nov',
+      'monthShort12': 'Dec',
+      // --- Explore Tours screen ---
+      'toursSearchHint': 'Search for a tour or location',
+      'toursDateHint': 'Date of the tour',
+      'toursApply': 'Apply',
+      'clearDate': 'Clear date',
+      'clearSearch': 'Clear search',
+      'trendingTours': 'Trending Tours',
+      'toursLoadFailed': "Couldn't load tours",
+      'toursEmpty': 'No tours match your search',
+      'toursHighlightedEmpty': 'No tours are highlighted yet',
+      'tourDayTravel': '{count} Day travel',
+      'tourDaysTravel': '{count} Days travel',
+      'tourPerPerson': 'per person',
+      'tourFeatureCamping': 'Camping',
+      'tourFeatureHiking': 'Hiking',
+      'tourFeatureGuide': 'Guide',
+      'tourFeatureFood': 'Food',
+      'tourFeatureSwimming': 'Swimming',
+      'tourFeatureCampfire': 'Campfire',
+      'tourFeatureTransport': 'Transport',
+      'tourFeaturePhotography': 'Photography',
+      'tourReviewCount': '{count} reviews',
+      'tourReviewCountOne': '1 review',
+      'tourNoReviews': 'No reviews yet',
+      'tourSpotsLeft': 'Only {count} spots left',
+      'tourSpotsLeftOne': 'Only 1 spot left',
+      'tourTravellers': 'Travellers',
+      'tourTravellerCount': '{count} travellers',
+      'tourTravellerCountOne': '1 traveller',
+      'tourTotalFor': 'Total {price}',
+      'tourCancelFree24h': 'Free cancellation until 24h before',
+      'tourCancelFree48h': 'Free cancellation until 48h before',
+      'tourCancelFree7d': 'Free cancellation until 7 days before',
+      'tourCancelNonRefundable': 'Non-refundable',
+      'tourGuideLanguages': 'Guide speaks',
+      'tourLanguageEnglish': 'English',
+      'tourLanguageKurdish': 'Kurdish',
+      'tourLanguageArabic': 'Arabic',
+      'tourLanguageTurkish': 'Turkish',
+      'tourLanguagePersian': 'Persian',
+      'toursSortLabel': 'Sort',
+      'toursSortSoonest': 'Soonest',
+      'toursSortPriceLow': 'Price: low to high',
+      'toursSortPriceHigh': 'Price: high to low',
+      'toursSortTopRated': 'Top rated',
+      'toursSortNearest': 'Nearest to me',
+      'toursRefine': 'Refine',
+      'toursIncludes': 'Includes',
+      'toursDateRangeHint': 'Dates of the tour',
+      'toursPriceApprox':
+          'Prices are converted at an indicative rate and shown as approximate. '
+          'You are charged in the operator’s own currency.',
+      'toursClearAll': 'Clear all',
+      'tourDetails': 'Tour Details',
+      'tourFacilities': 'Facilities',
+      'tourMap': 'Map',
+      'tourCheckout': 'Check Out',
+      'tourPerson': 'Person',
+      'tourTransportationBus': 'Transportation Bus',
+      'tourOptional': 'Optional',
+      'tourTotalPrice': 'Total Price',
+      'tourReserveInsight': 'Reserve Insight',
+      'tourTransportUnavailable':
+          'Bus transport is not available for this tour',
+      'tourWeatherUnavailable': 'Weather is unavailable',
+      'tourMapUnavailable': 'Map is unavailable',
+      'tourWriteReviewPrompt': 'Joined this tour?',
+      'tourNoReviewsYet': 'No reviews yet. Be the first to share your tour.',
+      'tourReviewSignInBody':
+          'Tour reviews are tied to your account, so travellers can trust who joined.',
     },
     'ku': <String, String>{
       'chooseYourLanguage': 'زمانەکەت هەڵبژێرە',
@@ -1006,7 +1095,8 @@ class AppLocalizations {
       'updateReview': 'نوێکردنەوەی بۆچوون',
       'reviewPosted': 'سوپاس — بۆچوونەکەت بڵاوکرایەوە',
       'reviewUpdated': 'بۆچوونەکەت نوێکرایەوە',
-      'reviewPostFailed': 'نەتوانرا بۆچوونەکەت بنێردرێت. تکایە دووبارە هەوڵ بدە.',
+      'reviewPostFailed':
+          'نەتوانرا بۆچوونەکەت بنێردرێت. تکایە دووبارە هەوڵ بدە.',
       'reviewRatingRequired': 'سەرەتا ژمارەی ئەستێرە هەڵبژێرە',
       'reviewCommentTooShort': 'لانیکەم ٣ پیت بنووسە',
       'reviewCommentTooLong': 'بۆچوونەکەت کەمتر لە ١٠٠٠ پیت بێت',
@@ -1172,6 +1262,78 @@ class AppLocalizations {
       'month12': 'کانوونی یەکەم',
       'timeAm': 'ب.ن',
       'timePm': 'د.ن',
+      // --- Explore Tours screen ---
+      'toursSearchHint': 'گەڕان بۆ گەشت یان شوێن',
+      'toursDateHint': 'ڕێکەوتی گەشتەکە',
+      'toursApply': 'جێبەجێکردن',
+      'clearDate': 'ڕێکەوت بسڕەوە',
+      'clearSearch': 'گەڕان بسڕەوە',
+      'trendingTours': 'گەشتە بەناوبانگەکان',
+      'toursLoadFailed': 'نەتوانرا گەشتەکان بهێنرێن',
+      'toursEmpty': 'هیچ گەشتێک لەگەڵ گەڕانەکەت ناگونجێت',
+      'toursHighlightedEmpty': 'هێشتا هیچ گەشتێک دیاری نەکراوە',
+      'tourDayTravel': 'گەشتی {count} ڕۆژ',
+      'tourDaysTravel': 'گەشتی {count} ڕۆژ',
+      'tourPerPerson': 'بۆ هەر کەسێک',
+      'tourFeatureCamping': 'خێوەتگە',
+      'tourFeatureHiking': 'پیاسەی چیا',
+      'tourFeatureGuide': 'ڕێبەر',
+      'tourFeatureFood': 'خواردن',
+      'tourFeatureSwimming': 'مەلەکردن',
+      'tourFeatureCampfire': 'ئاگری خێوەتگە',
+      'tourFeatureTransport': 'گواستنەوە',
+      'tourFeaturePhotography': 'وێنەگرتن',
+      'tourReviewCount': '{count} پێداچوونەوە',
+      // Digits stay Western in all three languages, matching every other
+      // number in the app (see `bookingDate`).
+      'tourReviewCountOne': '1 پێداچوونەوە',
+      'tourNoReviews': 'هێشتا پێداچوونەوە نییە',
+      'tourSpotsLeft': 'تەنها {count} شوێن ماوە',
+      'tourSpotsLeftOne': 'تەنها 1 شوێن ماوە',
+      'tourTravellers': 'گەشتیارەکان',
+      'tourTravellerCount': '{count} گەشتیار',
+      'tourTravellerCountOne': '1 گەشتیار',
+      'tourTotalFor': 'کۆی گشتی {price}',
+      'tourCancelFree24h': 'هەڵوەشاندنەوەی بێبەرامبەر تا 24 کاتژمێر پێشتر',
+      'tourCancelFree48h': 'هەڵوەشاندنەوەی بێبەرامبەر تا 48 کاتژمێر پێشتر',
+      'tourCancelFree7d': 'هەڵوەشاندنەوەی بێبەرامبەر تا 7 ڕۆژ پێشتر',
+      'tourCancelNonRefundable': 'پارە ناگەڕێتەوە',
+      'tourGuideLanguages': 'ڕێبەر قسە دەکات بە',
+      'tourLanguageEnglish': 'ئینگلیزی',
+      'tourLanguageKurdish': 'کوردی',
+      'tourLanguageArabic': 'عەرەبی',
+      'tourLanguageTurkish': 'تورکی',
+      'tourLanguagePersian': 'فارسی',
+      'toursSortLabel': 'ڕیزکردن',
+      'toursSortSoonest': 'نزیکترین کات',
+      'toursSortPriceLow': 'نرخ: لە کەمەوە بۆ زۆر',
+      'toursSortPriceHigh': 'نرخ: لە زۆرەوە بۆ کەم',
+      'toursSortTopRated': 'باشترین هەڵسەنگاندن',
+      'toursSortNearest': 'نزیکترین بۆ من',
+      'toursRefine': 'ورد کردنەوە',
+      'toursIncludes': 'لەخۆدەگرێت',
+      'toursDateRangeHint': 'ڕێکەوتەکانی گەشت',
+      'toursPriceApprox':
+          'نرخەکان بە ڕێژەیەکی نزیکەیی گۆڕدراون و وەک نزیکەیی پیشان دەدرێن. '
+          'پارەکە بە دراوی خودی کۆمپانیاکە وەردەگیرێت.',
+      'toursClearAll': 'هەمووی بسڕەوە',
+      'tourDetails': 'زانیارییەکانی گەشت',
+      'tourFacilities': 'خزمەتگوزارییەکان',
+      'tourMap': 'نەخشە',
+      'tourCheckout': 'پوختەی نرخ',
+      'tourPerson': 'کەس',
+      'tourTransportationBus': 'گواستنەوە بە پاس',
+      'tourOptional': 'ئارەزوومەندانە',
+      'tourTotalPrice': 'کۆی نرخ',
+      'tourReserveInsight': 'تۆمارکردنی گەشت',
+      'tourTransportUnavailable': 'گواستنەوە بە پاس بۆ ئەم گەشتە بەردەست نییە',
+      'tourWeatherUnavailable': 'زانیاری کەشوهەوا بەردەست نییە',
+      'tourMapUnavailable': 'نەخشە بەردەست نییە',
+      'tourWriteReviewPrompt': 'بەشداری ئەم گەشتەت کردووە؟',
+      'tourNoReviewsYet':
+          'هێشتا بۆچوون نییە. یەکەم کەس بە کە ئەزموونی گەشتەکەت باس دەکات.',
+      'tourReviewSignInBody':
+          'بۆچوونەکانی گەشت بە هەژمارەکەتەوە بەستراونەتەوە بۆ ئەوەی گەشتیاران متمانەیان پێ بکەن.',
     },
     'ar': <String, String>{
       'chooseYourLanguage': 'اختر لغتك',
@@ -1705,6 +1867,75 @@ class AppLocalizations {
       'month12': 'ديسمبر',
       'timeAm': 'ص',
       'timePm': 'م',
+      // --- Explore Tours screen ---
+      'toursSearchHint': 'ابحث عن جولة أو موقع',
+      'toursDateHint': 'تاريخ الجولة',
+      'toursApply': 'تطبيق',
+      'clearDate': 'مسح التاريخ',
+      'clearSearch': 'مسح البحث',
+      'trendingTours': 'الجولات الرائجة',
+      'toursLoadFailed': 'تعذر تحميل الجولات',
+      'toursEmpty': 'لا توجد جولات تطابق بحثك',
+      'toursHighlightedEmpty': 'لا توجد جولات مميزة بعد',
+      'tourDayTravel': 'رحلة {count} يوم',
+      'tourDaysTravel': 'رحلة {count} أيام',
+      'tourPerPerson': 'للشخص الواحد',
+      'tourFeatureCamping': 'تخييم',
+      'tourFeatureHiking': 'المشي الجبلي',
+      'tourFeatureGuide': 'مرشد',
+      'tourFeatureFood': 'طعام',
+      'tourFeatureSwimming': 'سباحة',
+      'tourFeatureCampfire': 'نار المخيم',
+      'tourFeatureTransport': 'نقل',
+      'tourFeaturePhotography': 'تصوير',
+      'tourReviewCount': '{count} تقييمات',
+      'tourReviewCountOne': 'تقييم واحد',
+      'tourNoReviews': 'لا توجد تقييمات بعد',
+      'tourSpotsLeft': 'بقي {count} مقاعد فقط',
+      'tourSpotsLeftOne': 'بقي مقعد واحد فقط',
+      'tourTravellers': 'المسافرون',
+      'tourTravellerCount': '{count} مسافرين',
+      'tourTravellerCountOne': 'مسافر واحد',
+      'tourTotalFor': 'الإجمالي {price}',
+      'tourCancelFree24h': 'إلغاء مجاني حتى 24 ساعة قبل الموعد',
+      'tourCancelFree48h': 'إلغاء مجاني حتى 48 ساعة قبل الموعد',
+      'tourCancelFree7d': 'إلغاء مجاني حتى 7 أيام قبل الموعد',
+      'tourCancelNonRefundable': 'غير قابل للاسترداد',
+      'tourGuideLanguages': 'لغات المرشد',
+      'tourLanguageEnglish': 'الإنجليزية',
+      'tourLanguageKurdish': 'الكردية',
+      'tourLanguageArabic': 'العربية',
+      'tourLanguageTurkish': 'التركية',
+      'tourLanguagePersian': 'الفارسية',
+      'toursSortLabel': 'الترتيب',
+      'toursSortSoonest': 'الأقرب موعداً',
+      'toursSortPriceLow': 'السعر: من الأقل للأعلى',
+      'toursSortPriceHigh': 'السعر: من الأعلى للأقل',
+      'toursSortTopRated': 'الأعلى تقييماً',
+      'toursSortNearest': 'الأقرب إليّ',
+      'toursRefine': 'تصفية',
+      'toursIncludes': 'يشمل',
+      'toursDateRangeHint': 'تواريخ الجولة',
+      'toursPriceApprox':
+          'يتم تحويل الأسعار بسعر صرف إرشادي وتظهر تقريبية. '
+          'يتم تحصيل المبلغ بعملة المشغّل نفسها.',
+      'toursClearAll': 'مسح الكل',
+      'tourDetails': 'تفاصيل الجولة',
+      'tourFacilities': 'المرافق',
+      'tourMap': 'الخريطة',
+      'tourCheckout': 'ملخص السعر',
+      'tourPerson': 'الأشخاص',
+      'tourTransportationBus': 'حافلة النقل',
+      'tourOptional': 'اختياري',
+      'tourTotalPrice': 'السعر الإجمالي',
+      'tourReserveInsight': 'احجز الجولة',
+      'tourTransportUnavailable': 'النقل بالحافلة غير متاح لهذه الجولة',
+      'tourWeatherUnavailable': 'معلومات الطقس غير متاحة',
+      'tourMapUnavailable': 'الخريطة غير متاحة',
+      'tourWriteReviewPrompt': 'هل شاركت في هذه الجولة؟',
+      'tourNoReviewsYet': 'لا توجد مراجعات بعد. كن أول من يشارك تجربة الجولة.',
+      'tourReviewSignInBody':
+          'ترتبط مراجعات الجولات بحسابك حتى يثق المسافرون بمن شارك فيها.',
     },
   };
 
@@ -2375,6 +2606,145 @@ class AppLocalizations {
     final month = monthName(date.month);
     if (locale.languageCode == 'en') return '$month ${date.day}, ${date.year}';
     return '${date.day} $month ${date.year}';
+  }
+
+  // --- Explore Tours screen ---
+
+  String get toursSearchHint => _t('toursSearchHint');
+  String get toursDateHint => _t('toursDateHint');
+  String get toursApply => _t('toursApply');
+  String get clearDate => _t('clearDate');
+  String get clearSearch => _t('clearSearch');
+  String get trendingTours => _t('trendingTours');
+  String get toursLoadFailed => _t('toursLoadFailed');
+  String get toursEmpty => _t('toursEmpty');
+  String get toursHighlightedEmpty => _t('toursHighlightedEmpty');
+  String get tourPerPerson => _t('tourPerPerson');
+  String get tourNoReviews => _t('tourNoReviews');
+  String get tourTravellers => _t('tourTravellers');
+  String get tourGuideLanguages => _t('tourGuideLanguages');
+  String get toursSortLabel => _t('toursSortLabel');
+  String get toursRefine => _t('toursRefine');
+  String get toursIncludes => _t('toursIncludes');
+  String get toursDateRangeHint => _t('toursDateRangeHint');
+  String get toursPriceApprox => _t('toursPriceApprox');
+  String get toursClearAll => _t('toursClearAll');
+  String get tourDetails => _t('tourDetails');
+  String get tourFacilities => _t('tourFacilities');
+  String get tourMap => _t('tourMap');
+  String get tourCheckout => _t('tourCheckout');
+  String get tourPerson => _t('tourPerson');
+  String get tourTransportationBus => _t('tourTransportationBus');
+  String get tourOptional => _t('tourOptional');
+  String get tourTotalPrice => _t('tourTotalPrice');
+  String get tourReserveInsight => _t('tourReserveInsight');
+  String get tourTransportUnavailable => _t('tourTransportUnavailable');
+  String get tourWeatherUnavailable => _t('tourWeatherUnavailable');
+  String get tourMapUnavailable => _t('tourMapUnavailable');
+  String get tourWriteReviewPrompt => _t('tourWriteReviewPrompt');
+  String get tourNoReviewsYet => _t('tourNoReviewsYet');
+  String get tourReviewSignInBody => _t('tourReviewSignInBody');
+
+  /// "128 reviews". A one-review tour gets its own string rather than
+  /// "1 reviews" — and Kurdish and Arabic do not pluralize with an "s".
+  String tourReviewCount(int count) => count == 1
+      ? _t('tourReviewCountOne')
+      : _t('tourReviewCount').replaceAll('{count}', '$count');
+
+  /// "Only 3 spots left". Drawn only when the number is genuinely small; see
+  /// [Tour.isLowAvailability].
+  String tourSpotsLeft(int count) => count == 1
+      ? _t('tourSpotsLeftOne')
+      : _t('tourSpotsLeft').replaceAll('{count}', '$count');
+
+  String tourTravellerCount(int count) => count == 1
+      ? _t('tourTravellerCountOne')
+      : _t('tourTravellerCount').replaceAll('{count}', '$count');
+
+  /// "Total $220" — the party price beneath the per-person one.
+  String tourTotalFor(String price) =>
+      _t('tourTotalFor').replaceAll('{price}', price);
+
+  String tourCancellationLabel(TourCancellationPolicy policy) =>
+      switch (policy) {
+        TourCancellationPolicy.free24h => _t('tourCancelFree24h'),
+        TourCancellationPolicy.free48h => _t('tourCancelFree48h'),
+        TourCancellationPolicy.free7d => _t('tourCancelFree7d'),
+        TourCancellationPolicy.nonRefundable => _t('tourCancelNonRefundable'),
+      };
+
+  String tourGuideLanguageLabel(TourGuideLanguage language) =>
+      switch (language) {
+        TourGuideLanguage.english => _t('tourLanguageEnglish'),
+        TourGuideLanguage.kurdish => _t('tourLanguageKurdish'),
+        TourGuideLanguage.arabic => _t('tourLanguageArabic'),
+        TourGuideLanguage.turkish => _t('tourLanguageTurkish'),
+        TourGuideLanguage.persian => _t('tourLanguagePersian'),
+      };
+
+  String tourSortLabel(TourSort sort) => switch (sort) {
+    TourSort.soonest => _t('toursSortSoonest'),
+    TourSort.priceLowToHigh => _t('toursSortPriceLow'),
+    TourSort.priceHighToLow => _t('toursSortPriceHigh'),
+    TourSort.topRated => _t('toursSortTopRated'),
+    TourSort.nearest => _t('toursSortNearest'),
+  };
+
+  /// "2 Days travel". Singular and plural are separate strings rather than one
+  /// with an "s" appended, because neither Kurdish nor Arabic pluralizes that
+  /// way.
+  String tourDuration(int days) =>
+      (days == 1 ? _t('tourDayTravel') : _t('tourDaysTravel')).replaceAll(
+        '{count}',
+        '$days',
+      );
+
+  String tourFeatureLabel(TourFeature feature) => switch (feature) {
+    TourFeature.camping => _t('tourFeatureCamping'),
+    TourFeature.hiking => _t('tourFeatureHiking'),
+    TourFeature.guide => _t('tourFeatureGuide'),
+    TourFeature.food => _t('tourFeatureFood'),
+    TourFeature.swimming => _t('tourFeatureSwimming'),
+    TourFeature.campfire => _t('tourFeatureCampfire'),
+    TourFeature.transport => _t('tourFeatureTransport'),
+    TourFeature.photography => _t('tourFeaturePhotography'),
+  };
+
+  /// The month as drawn in a tour's date range — abbreviated in English,
+  /// spelled out in Kurdish and Arabic.
+  ///
+  /// Those two have no conventional three-letter abbreviation, and a made-up
+  /// one would be worse than a long label that wraps.
+  String _monthLabel(int month) => locale.languageCode == 'en'
+      ? _t('monthShort${month.clamp(1, 12)}')
+      : monthName(month);
+
+  /// "Aug 14 - Aug 16", collapsing to "Aug 14 - 16" when both ends fall in the
+  /// same month and to a single date when the tour runs for one day.
+  ///
+  /// Kurdish and Arabic put the day first ("14 - 16 ئاب"), the same rule
+  /// [bookingDate] follows. Digits stay Western in all three languages,
+  /// matching every other number in the app.
+  String tourDateRange(DateTime start, DateTime? end) {
+    final isEnglish = locale.languageCode == 'en';
+    String single(DateTime date) {
+      final month = _monthLabel(date.month);
+      return isEnglish ? '$month ${date.day}' : '${date.day} $month';
+    }
+
+    if (end == null ||
+        (end.year == start.year &&
+            end.month == start.month &&
+            end.day == start.day)) {
+      return single(start);
+    }
+    if (end.year == start.year && end.month == start.month) {
+      final month = _monthLabel(start.month);
+      return isEnglish
+          ? '$month ${start.day} - ${end.day}'
+          : '${start.day} - ${end.day} $month';
+    }
+    return '${single(start)} - ${single(end)}';
   }
 
   /// "9:35 AM" — 12-hour in all three languages, matching the reference.

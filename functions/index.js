@@ -894,3 +894,141 @@ exports.syncReviewHelpfulCount = onDocumentWritten(
     }
   }
 );
+
+// =====================================================================
+// Tour rating aggregates — added with the Explore Tours screen.
+//
+// Identical in shape and in reasoning to syncNatureReviewAggregates
+// above, pointed at `tours/{tourId}/reviews`. Deliberately a second
+// trigger rather than a shared collectionGroup one: a collectionGroup
+// listener on `reviews` would fire for every catalog that ever gains a
+// `reviews` subcollection, and would then have to guess which parent
+// document to write back to from the event path. Two explicit triggers
+// cost nothing and cannot write to the wrong collection.
+//
+// Recompute rather than increment, for the same reason: Firestore
+// triggers are at-least-once, so a duplicate delivery is a documented
+// guarantee. An increment applied twice corrupts the count permanently;
+// a recompute applied twice gives the same answer and repairs drift.
+// It is also what makes `tool/seed_explore_tours.js` work — it writes
+// reviews and no aggregates at all.
+//
+// `tours` is admin-only write (firestore.rules), and it must stay that
+// way: a client that could write the average score of a tour could give
+// a competing operator a 2.0 without leaving a review. So the client
+// writes only its own review document, and all three aggregates are
+// derived from it here.
+// =====================================================================
+exports.syncTourReviewAggregates = onDocumentWritten(
+  {
+    region: "us-central1",
+    document: "tours/{tourId}/reviews/{reviewId}",
+  },
+  async (event) => {
+    const before = event.data && event.data.before;
+    const after = event.data && event.data.after;
+    const ratingBefore = countableRating(
+      before && before.exists ? before.data() : null
+    );
+    const ratingAfter = countableRating(
+      after && after.exists ? after.data() : null
+    );
+
+    // An edit that changed only the comment text cannot move the score,
+    // so there is nothing to recompute.
+    if (ratingBefore === ratingAfter) return;
+
+    const tourId = event.params.tourId;
+    const tourRef = db.collection("tours").doc(tourId);
+
+    const snapshot = await tourRef
+      .collection("reviews")
+      .where("status", "==", "published")
+      .get();
+
+    let count = 0;
+    let sum = 0;
+    const breakdown = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    snapshot.forEach((doc) => {
+      const rating = countableRating(doc.data());
+      if (rating === null) return;
+      count += 1;
+      sum += rating;
+      breakdown[ratingBucket(rating)] += 1;
+    });
+
+    await tourRef.set({
+      ratingCount: count,
+      ratingBreakdown: breakdown,
+      // 0–10, one decimal — the Booking.com-style score the rest of the
+      // app already shows. Null (not 0) with no reviews: an unrated tour
+      // is not a badly rated one, which is the rule the card follows by
+      // hiding the badge.
+      reviewScore: count === 0 ? null : Math.round((sum / count) * 2 * 10) / 10,
+      updatedAt: FieldValue.serverTimestamp(),
+    }, { merge: true });
+
+    logger.info(
+      `Recomputed review aggregates for tour ${tourId}: ` +
+      `${count} reviews, score ${count === 0 ? "none" : sum / count * 2}.`
+    );
+  }
+);
+
+/** Maintains helpfulCount for votes under tours/{tourId}/reviews. */
+exports.syncTourReviewHelpfulCount = onDocumentWritten(
+  {
+    region: "us-central1",
+    document: "tours/{tourId}/reviews/{reviewId}/votes/{voterId}",
+  },
+  async (event) => {
+    const before = event.data && event.data.before;
+    const after = event.data && event.data.after;
+    const existedBefore = Boolean(before && before.exists);
+    const existsAfter = Boolean(after && after.exists);
+    if (existedBefore === existsAfter) return;
+
+    const reviewRef = db.collection("tours")
+      .doc(event.params.tourId)
+      .collection("reviews")
+      .doc(event.params.reviewId);
+    const total = await reviewRef.collection("votes").count().get();
+    try {
+      await reviewRef.update({ helpfulCount: total.data().count });
+    } catch (e) {
+      logger.info(
+        "Skipped tour helpfulCount update; the review no longer exists.", e
+      );
+    }
+  }
+);
+
+// =====================================================================
+// Tour availability — `tours.bookedCount` is SERVER-OWNED.
+//
+// The Explore Tours screen hides a departure that cannot seat the whole
+// party, and prints "Only 3 spots left". Both numbers must come from
+// somewhere a client cannot write: a client that could set `bookedCount`
+// could mark a rival operator's departure full, or zero it out and
+// oversell a trip that is already sold.
+//
+// There is nothing to maintain it from yet — **no code in this app can
+// create a tour booking**, because the tour detail/checkout screen does
+// not exist (ROADMAP Phase 6). When it does, the checkout Cloud Function
+// must do BOTH of these inside one transaction:
+//
+//   1. re-read `tours/{id}.capacity` and `bookedCount`, and refuse the
+//      booking if `capacity - bookedCount < party size`. Checking
+//      availability on the client is not a check — it is a suggestion;
+//   2. write the booking and bump `bookedCount` in the same transaction,
+//      so two people paying at once cannot both take the last seat.
+//
+// A trigger on `bookings` is NOT sufficient on its own: by the time it
+// fires the payment has already been taken, and an oversold departure
+// then has to be refunded and apologised for. The transaction is the
+// control; a recompute trigger is only a repair job on top of it.
+//
+// Recorded here, in the file that would own it, rather than only in
+// DATA_MODEL.md — this is the kind of gap that gets discovered in
+// production.
+// =====================================================================

@@ -25,7 +25,6 @@ class AppRecessedGlassField extends StatelessWidget {
     this.onTap,
     this.prefix,
     this.dark,
-    this.nativeIOS26 = false,
   });
 
   final TextEditingController controller;
@@ -42,7 +41,6 @@ class AppRecessedGlassField extends StatelessWidget {
   final VoidCallback? onTap;
   final Widget? prefix;
   final bool? dark;
-  final bool nativeIOS26;
 
   static const double radius = 14;
 
@@ -66,7 +64,6 @@ class AppRecessedGlassField extends StatelessWidget {
       dark: isDark,
       quality: AppLiquidGlassQuality.standard,
       tint: isDark ? const Color(0xFF061512) : Colors.white,
-      nativeIOS26: nativeIOS26,
       child: CustomPaint(
         painter: _InsetDepthPainter(
           borderRadius: radius,
